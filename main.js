@@ -11,11 +11,16 @@ var solarSystem1;
 init();
 animate();
 
+// Gibt eine Zufallszahl zwischen min (inklusive) und max (exklusive) zurück
+function randomInt(min, max) {
+	return Math.floor(Math.random() * (max - min)) + min;
+}
+
 function init() {
 	scene = new THREE.Scene();
 
 	camera = new THREE.PerspectiveCamera(65, aspect, 1, 1e5);
-	camera.position.y = 500;
+	camera.position.y = 5000;
 	camera.position.z = 1500;
 	camera.lookAt(scene.position);
 
@@ -26,16 +31,27 @@ function init() {
 
 	scene.add(new THREE.AmbientLight(0x404040));
 
-	var p1 = new Planet({radius: 100, rotationSpeed: 0.1, orbitalSpeed: 0.1});
-	p1.position.x = -400;
-	var p2 = new Planet({orbitalSpeed: 0.2});
-	p2.position.x = -600;
-	var planets = [p1, p2];
+	var star = new Star({radius: randomInt(400, 1200), rotationSpeed: -0.1});
+	console.log(star.getRadius());
 
-	solarSystem1 = new SolarSystem(
-		new Star({rotationSpeed: -0.1}),
-		planets
-	);
+	var rndInt = randomInt(3, 10);
+	var nextPlanetPosX = star.getRadius();
+	var planets = [];
+	for (var i = 0; i < rndInt; i++) {
+		var pos = i + 1;
+		var planetRadius = randomInt(30, 80);
+		var p = new Planet({radius: planetRadius, rotationSpeed: Math.random() * (0.3 - 0.05) + 0.05, orbitalSpeed: 0.1 * (rndInt / pos) + (Math.random() / 5 - 0.1)});
+		nextPlanetPosX += planetRadius * 2 + randomInt(planetRadius + 50, 600);
+		p.position.x = -nextPlanetPosX;
+		planets[i] = p;
+	}
+//	var p1 = new Planet({radius: 100, rotationSpeed: 0.1, orbitalSpeed: 0.1});
+//	p1.position.x = -400;
+//	var p2 = new Planet({orbitalSpeed: 0.2});
+//	p2.position.x = -600;
+//	var planets = [p1, p2];
+
+	solarSystem1 = new SolarSystem(star, planets);
 
 	scene.add(solarSystem1);
 

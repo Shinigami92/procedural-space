@@ -20,6 +20,10 @@ Star = function(parameters) {
 Star.prototype = Object.create(THREE.Object3D.prototype);
 Star.prototype.constructor = Star;
 
+Star.prototype.getRadius = function() {
+	return this.mesh.geometry.parameters.radius;
+};
+
 Star.prototype.update = function(delta) {
 	this.mesh.rotation.y += this.rotationSpeed * delta;
 };
