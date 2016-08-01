@@ -3,12 +3,13 @@ Planet = function(parameters) {
 
 	parameters = parameters || {};
 	var radius = parameters.radius !== undefined ? parameters.radius : 10;
+	var color = parameters.color !== undefined ? parameters.color : new THREE.Color(0x87421f);
 	var orbitalSpeed = parameters.orbitalSpeed !== undefined ? parameters.orbitalSpeed : 0;
 	var rotationSpeed = parameters.rotationSpeed !== undefined ? parameters.rotationSpeed : 0;
 
 	var mesh = new THREE.Mesh(
 		new THREE.SphereGeometry(radius, 32, 32),
-		new THREE.MeshStandardMaterial({color: 0xff0000, wireframe: true})
+		new THREE.MeshStandardMaterial({color: color, wireframe: false})
 	);
 	mesh.receiveShadow = true;
 	mesh.castShadow = true;

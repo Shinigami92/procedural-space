@@ -7,7 +7,7 @@ Star = function(parameters) {
 	var light = new THREE.PointLight(0xffffff, 1, 3e5);
 	var mesh = new THREE.Mesh(
 		new THREE.SphereGeometry(radius, 32, 32),
-		new THREE.MeshBasicMaterial({color: 0xfff5f2, wireframe: true})
+		new THREE.MeshBasicMaterial({color: 0xfff5f2, wireframe: false})
 	);
 	this.add(light);
 	this.add(mesh);

@@ -1,0 +1,21 @@
+body {
+	margin: 0;
+	overflow: hidden;
+	background-color: black;
+}
+
+#viewport {
+	cursor: crosshair;
+}
+
+#hud {
+	position: absolute;
+	color: rgba(0, 229, 229, 0.9);
+	top: 48px;
+	left: 0;
+	font-family: monospace;
+	background-color: rgba(0, 22, 49, 0.5);
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+	/*background-color: red;*/
+}
