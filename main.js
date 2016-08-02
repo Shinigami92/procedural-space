@@ -22,6 +22,7 @@ function init() {
 	scene = new THREE.Scene();
 
 	camera = new THREE.PerspectiveCamera(65, aspect, 1, 1e5);
+	camera.rotation.reorder('YXZ');
 	camera.position.y = 5000;
 	camera.position.z = 1500;
 	camera.lookAt(scene.position);
@@ -75,6 +76,8 @@ function init() {
 	document.body.appendChild(hud);
 	window.addEventListener('resize', onWindowResize, false);
 	document.addEventListener('keydown', onKeyDown, false);
+	document.addEventListener('keypress', onKeyPress, false);
+	document.addEventListener('keyup', onKeyUp, false);
 
 	composer = new THREE.EffectComposer(renderer);
 
@@ -89,7 +92,7 @@ function init() {
 //	composer.addPass(dotScreenPass);
 }
 
-//var radToDeg = 180 / Math.PI;
+var radToDeg = 180 / Math.PI;
 function animate() {
 	requestAnimationFrame(animate);
 	var delta = clock.getDelta();
@@ -106,13 +109,14 @@ function animate() {
 	composer.render(delta);
 	stats.update();
 
-	var pitch = camera.rotation.x;
-	var yaw = camera.rotation.y;
-	var roll = camera.rotation.z;
-	hudCamStats.innerHTML = 'Camera:<br>'
-						+ ' Pos: x=' + camera.position.x.toFixed(2) + ', y=' + camera.position.y.toFixed(2) + ', z=' + camera.position.z.toFixed(2);// + '<br>'
-//						+ ' Rot: x=' + (0).toFixed(2) + ', y=' + ((-Math.sin(yaw)*Math.sin(pitch)*Math.sin(roll)+Math.cos(yaw)*Math.cos(roll))*90).toFixed(2) + ', z=' + (Math.cos(pitch)*Math.sin(roll)).toFixed(2) + '<br>'
-//						+ ' Rot: x=' + (camera.rotation.x * radToDeg).toFixed(2) + ', y=' + (-camera.rotation.y * radToDeg).toFixed(2) + ', z=' + (-camera.rotation.z * radToDeg + 180).toFixed(2);
+	var pitch = camera.rotation.x * radToDeg;
+	var yaw = camera.rotation.y * -radToDeg;
+	var roll = camera.rotation.z * -radToDeg;
+	if (yaw <= 0) yaw += 360;
+	if (roll <= 0) roll += 360;
+	hudCamStats.innerHTML = 'Camera:'
+	hudCamStats.innerHTML += '<br> Pos: x=' + camera.position.x.toFixed(2) + ', y=' + camera.position.y.toFixed(2) + ', z=' + camera.position.z.toFixed(2);// + '<br>'
+	hudCamStats.innerHTML += '<br> Rot: pitch=' + pitch.toFixed(2) + ', yaw=' + yaw.toFixed(2) + ', roll=' + roll.toFixed(2);
 	hudCamStats.innerHTML += '<br> Speed: ' + controls.movementSpeed;
 }
 
@@ -130,7 +134,7 @@ function onWindowResize(event) {
 }
 
 function onKeyDown(event) {
-	console.log(event);
+	//console.log('keydown', event);
 	switch(event.keyCode) {
 		case 107: // NumpadAdd | +
 		case 187: // BracketRight | +
@@ -138,6 +142,24 @@ function onKeyDown(event) {
 			break;
 		case 109: // NumpadSubtract | -
 		case 189: // Slash | -
+			controls.movementSpeed /= 2;
+			break;
+		case 16: // ShiftLeft
+			if (!event.repeat) controls.movementSpeed *= 2;
+			break;
+	}
+}
+
+function onKeyPress(event) {
+	//console.log('keypress', event);
+	switch(event.keyCode) {
+	}
+}
+
+function onKeyUp(event) {
+	//console.log('keyup', event);
+	switch(event.keyCode) {
+		case 16: // ShiftLeft
 			controls.movementSpeed /= 2;
 			break;
 	}
