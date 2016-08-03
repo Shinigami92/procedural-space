@@ -6,9 +6,14 @@ var aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
 var scene, camera, renderer, controls, stats;
 var clock = new THREE.Clock();
 
+var RAD_TO_DEG = 180 / Math.PI;
+var DEG_TO_RAD = Math.PI / 180;
+
 var hud, hudCamStats;
 
-var solarSystem1;
+var UNIVERSE_RADIUS = 1e5;
+var MAX_SOLAR_SYSTEMS = 25;
+var solarSystems = [];
 
 init();
 animate();
@@ -21,42 +26,28 @@ function randomInt(min, max) {
 function init() {
 	scene = new THREE.Scene();
 
-	camera = new THREE.PerspectiveCamera(65, aspect, 1, 1e5);
+	camera = new THREE.PerspectiveCamera(65, aspect, 1, 1e6);
 	camera.rotation.reorder('YXZ');
-	camera.position.y = 5000;
-	camera.position.z = 1500;
+	//camera.position.y = 5000;
+	//camera.position.z = 1500;
+	//camera.position.z = 15000;
 	camera.lookAt(scene.position);
 
 	controls = new THREE.FlyControls(camera);
 	controls.dragToLook = true;
-	controls.movementSpeed = 500;
+	controls.movementSpeed = 2000;
 	controls.rollSpeed = Math.PI / 6;
 
 	scene.add(new THREE.AmbientLight(0x404040));
 
-	var star = new Star({radius: randomInt(400, 1200), rotationSpeed: -0.1});
-
-	var rndInt = randomInt(3, 10);
-	var nextPlanetPosX = star.getRadius();
-	var planets = [];
-	for (var i = 0; i < rndInt; i++) {
-		var pos = i + 1;
-		var planetRadius = randomInt(30, 80);
-		var planetColor = new THREE.Color().setHSL(Math.random(), 1, 0.5);
-		var p = new Planet({radius: planetRadius, color: planetColor, rotationSpeed: Math.random() * (0.3 - 0.05) + 0.05, orbitalSpeed: 0.1 * (rndInt / pos) + (Math.random() / 5 - 0.1)});
-		nextPlanetPosX += planetRadius * 2 + randomInt(planetRadius + 50, 600);
-		p.position.x = -nextPlanetPosX;
-		planets[i] = p;
+	for (var i = 0; i < MAX_SOLAR_SYSTEMS; i++) {
+		solarSystem = SolarSystem.generate();
+		solarSystem.position.set(randomInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS), randomInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS), randomInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS));
+		solarSystem.rotation.set(randomInt(0, 360) * DEG_TO_RAD, randomInt(0, 360) * DEG_TO_RAD, randomInt(0, 360) * DEG_TO_RAD);
+		solarSystems.push(solarSystem);
 	}
-//	var p1 = new Planet({radius: 100, rotationSpeed: 0.1, orbitalSpeed: 0.1});
-//	p1.position.x = -400;
-//	var p2 = new Planet({orbitalSpeed: 0.2});
-//	p2.position.x = -600;
-//	var planets = [p1, p2];
 
-	solarSystem1 = new SolarSystem(star, planets);
-
-	scene.add(solarSystem1);
+	solarSystems.forEach(s => scene.add(s));
 
 	renderer = new THREE.WebGLRenderer({antialias: true});
 	renderer.setPixelRatio(window.devicePixelRatio);
@@ -92,12 +83,11 @@ function init() {
 //	composer.addPass(dotScreenPass);
 }
 
-var radToDeg = 180 / Math.PI;
 function animate() {
 	requestAnimationFrame(animate);
 	var delta = clock.getDelta();
 
-	solarSystem1.update(delta);
+	solarSystems.forEach(s => s.update(delta));
 
 //	var starRotationYSpeed = 0.2 * delta;
 //	star.rotation.y += starRotationYSpeed;
@@ -109,9 +99,9 @@ function animate() {
 	composer.render(delta);
 	stats.update();
 
-	var pitch = camera.rotation.x * radToDeg;
-	var yaw = camera.rotation.y * -radToDeg;
-	var roll = camera.rotation.z * -radToDeg;
+	var pitch = camera.rotation.x * RAD_TO_DEG;
+	var yaw = camera.rotation.y * -RAD_TO_DEG;
+	var roll = camera.rotation.z * -RAD_TO_DEG;
 	if (yaw <= 0) yaw += 360;
 	if (roll <= 0) roll += 360;
 	hudCamStats.innerHTML = 'Camera:'

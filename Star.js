@@ -1,10 +1,10 @@
 Star = function(parameters) {
 	THREE.Object3D.apply(this, arguments);
 	parameters = parameters || {};
-	var radius = parameters.radius !== undefined ? parameters.radius : 100;
+	var radius = parameters.radius !== undefined ? parameters.radius : 800;
 	var rotationSpeed = parameters.rotationSpeed !== undefined ? parameters.rotationSpeed : 0;
 
-	var light = new THREE.PointLight(0xffffff, 1, 3e5);
+	var light = new THREE.PointLight(0xffffff, 1, 3e4);
 	var mesh = new THREE.Mesh(
 		new THREE.SphereGeometry(radius, 32, 32),
 		new THREE.MeshBasicMaterial({color: 0xfff5f2, wireframe: false})
