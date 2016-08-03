@@ -5,6 +5,11 @@ var aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
 
 var scene, camera, renderer, controls, stats;
 var clock = new THREE.Clock();
+var tick = 0;
+
+var particleSystem, particleOption;
+var particleTimeScale = 0.1, particleMax = 25000, particleSpawnRate = 15000;
+var textureLoader;
 
 var RAD_TO_DEG = 180 / Math.PI;
 var DEG_TO_RAD = Math.PI / 180;
@@ -25,12 +30,14 @@ function randomInt(min, max) {
 
 function init() {
 	scene = new THREE.Scene();
+	scene.fog = new THREE.FogExp2(0x0d0d0d, 0.0000125);
 
 	camera = new THREE.PerspectiveCamera(65, aspect, 1, 1e6);
 	camera.rotation.reorder('YXZ');
 	//camera.position.y = 5000;
 	//camera.position.z = 1500;
 	//camera.position.z = 15000;
+	camera.position.z = 10;
 	camera.lookAt(scene.position);
 
 	controls = new THREE.FlyControls(camera);
@@ -48,6 +55,28 @@ function init() {
 	}
 
 	solarSystems.forEach(s => scene.add(s));
+
+	textureLoader = new THREE.TextureLoader();
+
+	particleSystem = new THREE.GPUParticleSystem({
+		maxParticles: particleMax,
+		particleSpriteTex: textureLoader.load('http://threejs.org/examples/textures/particle2.png'),
+		particleNoiseTex: textureLoader.load('http://threejs.org/examples/textures/perlin-512.png')
+	});
+	scene.add(particleSystem);
+
+	particleOptions = {
+		position: new THREE.Vector3(0, 0, 0),
+		positionRandomness: 100,//.3,
+		velocity: new THREE.Vector3(0, 0, 0),
+		velocityRandomness: 0,//.5,
+		color: 0xffffff,//0xaa88ff,
+		colorRandomness: 0,//.2,
+		turbulence: 0,//.5,
+		lifetime: 1,//2,
+		size: 1,//5,
+		sizeRandomness: 0.2//1
+	};
 
 	renderer = new THREE.WebGLRenderer({antialias: true});
 	renderer.setPixelRatio(window.devicePixelRatio);
@@ -86,8 +115,21 @@ function init() {
 function animate() {
 	requestAnimationFrame(animate);
 	var delta = clock.getDelta();
+	tick += delta * particleTimeScale;
+	if (tick < 0) tick = 0;
 
 	solarSystems.forEach(s => s.update(delta));
+
+	if (delta > 0) {
+		//particleOptions.position.x = camera.position.x;
+		//particleOptions.position.y = camera.position.y;
+		//particleOptions.position.z = camera.position.z;
+		for (var i = 0; i < particleSpawnRate  * delta; i++) {
+			particleOptions.position.set(randomInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS)*2, randomInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS)*2, randomInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS)*2);
+			particleSystem.spawnParticle(particleOptions);
+		}
+	}
+	particleSystem.update(tick);
 
 //	var starRotationYSpeed = 0.2 * delta;
 //	star.rotation.y += starRotationYSpeed;
