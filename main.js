@@ -16,12 +16,13 @@ var DEG_TO_RAD = Math.PI / 180;
 
 var hud, hudCamStats;
 
-var UNIVERSE_RADIUS = 1e5;
+var UNIVERSE_RADIUS = 1e6;
 var MAX_SOLAR_SYSTEMS = 25;
 var solarSystems = [];
 
+var currPlanet = null;
+
 init();
-animate();
 
 // Gibt eine Zufallszahl zwischen min (inklusive) und max (exklusive) zurück
 function randomInt(min, max) {
@@ -32,17 +33,17 @@ function init() {
 	scene = new THREE.Scene();
 	scene.fog = new THREE.FogExp2(0x0d0d0d, 0.0000125);
 
-	camera = new THREE.PerspectiveCamera(65, aspect, 1, 1e6);
+	camera = new THREE.PerspectiveCamera(65, aspect, 0.1, 1e6);
 	camera.rotation.reorder('YXZ');
 	//camera.position.y = 5000;
 	//camera.position.z = 1500;
 	//camera.position.z = 15000;
-	camera.position.z = 10;
+	//camera.position.z = 10;
 	camera.lookAt(scene.position);
 
 	controls = new THREE.FlyControls(camera);
 	controls.dragToLook = true;
-	controls.movementSpeed = 2000;
+	controls.movementSpeed = 250;
 	controls.rollSpeed = Math.PI / 6;
 
 	scene.add(new THREE.AmbientLight(0x404040));
@@ -55,15 +56,31 @@ function init() {
 	}
 
 	solarSystems.forEach(s => scene.add(s));
+	//console.log(solarSystems[0].planets[1].mesh);
+	//solarSystems[0].planets[1].mesh.add(camera);
+	//camera.position.x = solarSystems[0].planets[1].radius + 20;
 
 	textureLoader = new THREE.TextureLoader();
+	textureLoader.crossOrigin = '';
 
-	particleSystem = new THREE.GPUParticleSystem({
+	textureLoader.load('http://threejs.org/examples/textures/particle2.png', psTex => {
+		textureLoader.load('http://threejs.org/examples/textures/perlin-512.png', pnTex => {
+			particleSystem = new THREE.GPUParticleSystem({
+				maxParticles: particleMax,
+				particleSpriteTex: psTex,
+				particleNoiseTex: pnTex
+			});
+			scene.add(particleSystem);
+			animate();
+		});
+	});
+
+	/*particleSystem = new THREE.GPUParticleSystem({
 		maxParticles: particleMax,
 		particleSpriteTex: textureLoader.load('http://threejs.org/examples/textures/particle2.png'),
 		particleNoiseTex: textureLoader.load('http://threejs.org/examples/textures/perlin-512.png')
 	});
-	scene.add(particleSystem);
+	scene.add(particleSystem);*/
 
 	particleOptions = {
 		position: new THREE.Vector3(0, 0, 0),
@@ -110,6 +127,62 @@ function init() {
 //	dotScreenPass.uniforms['scale'].value = 3;
 //	dotScreenPass.renderToScreen = true;
 //	composer.addPass(dotScreenPass);
+	//attachCamToPlanet();
+	//console.log(currPlanet);
+	//currPlanet.mesh.add(camera);
+	//camera.position.x = currPlanet.radius + 20;
+	nearest(camera.position, scene, o => o instanceof SolarSystem, (ss, ssDist) => {
+		console.log('Nearest SolarSystem was:', ss, 'Dist was:', ssDist);
+		nearest(camera.position, ss, o => o instanceof Planet, (p, pDist) => {
+			console.log('Nearest Planet was:', p, 'Dist was:', pDist);
+			console.log('Planet\'s distance to it\'s star was:', p.position.distanceTo(ss.position));
+		});
+	});
+}
+
+function nearest(pos, rootObj, filterCallback, callback) {
+	var tmp = null;
+	var tmpDistance = null;
+	var traversedObjs = 0;
+	rootObj.traverse(o => {
+		if (filterCallback(o)) {
+			if (tmp == null) {
+				tmp = o;
+				tmpDistance = pos.distanceTo(o.position);
+			} else {
+				var tmpDistance2 = pos.distanceTo(o.position);
+				if (tmpDistance2 < tmpDistance) {
+					tmp = o;
+					tmpDistance = tmpDistance2;
+				}
+			}
+			traversedObjs++;
+		}
+	});
+	console.log('Traversed objects:', traversedObjs);
+	callback(tmp, tmpDistance);
+}
+
+function attachCamToPlanet() {
+	if (currPlanet == null) {
+		var tmpPlanet = null;
+		var tmpDistance = null;
+		scene.traverse(o => {
+			if (o instanceof Planet) {
+				if (tmpPlanet == null) {
+					tmpPlanet = o;
+					tmpDistance = camera.position.distanceTo(tmpPlanet.position);
+				} else {
+					var tmpDistance2 = camera.position.distanceTo(o.position);
+					if (tmpDistance2 < tmpDistance) {
+						tmpPlanet = o;
+						tmpDistance = tmpDistance2;
+					}
+				}
+			}
+		});
+		currPlanet = tmpPlanet;
+	}
 }
 
 function animate() {

@@ -20,6 +20,7 @@ Planet = function(parameters) {
 	this.rotationSpeed = rotationSpeed;
 	this.orbitalPivot = null;
 	this.orbitalSpeed = orbitalSpeed;
+	this.radius = radius;
 };
 
 Planet.prototype = Object.create(THREE.Object3D.prototype);
