@@ -34,6 +34,7 @@ function init() {
 	scene.fog = new THREE.FogExp2(0x0d0d0d, 0.0000125);
 
 	camera = new THREE.PerspectiveCamera(65, aspect, 0.1, 1e6);
+	scene.add(camera);
 	camera.rotation.reorder('YXZ');
 	//camera.position.y = 5000;
 	//camera.position.z = 1500;
@@ -49,7 +50,7 @@ function init() {
 	scene.add(new THREE.AmbientLight(0x404040));
 
 	for (var i = 0; i < MAX_SOLAR_SYSTEMS; i++) {
-		solarSystem = SolarSystem.generate();
+		var solarSystem = SolarSystem.generate();
 		solarSystem.position.set(randomInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS), randomInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS), randomInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS));
 		solarSystem.rotation.set(randomInt(0, 360) * DEG_TO_RAD, randomInt(0, 360) * DEG_TO_RAD, randomInt(0, 360) * DEG_TO_RAD);
 		solarSystems.push(solarSystem);
@@ -57,8 +58,12 @@ function init() {
 
 	solarSystems.forEach(s => scene.add(s));
 	//console.log(solarSystems[0].planets[1].mesh);
-	//solarSystems[0].planets[1].mesh.add(camera);
-	//camera.position.x = solarSystems[0].planets[1].radius + 20;
+	//var pl = solarSystems[0].planets[1];
+	//console.log('6', 'camPos:', camera.position, 'camWorldPos:', camera.getWorldPosition(), 'pPos:', pl.position, 'pWorldPos:', pl.getWorldPosition());
+	//pl.mesh.add(camera);
+	//console.log('7', 'camPos:', camera.position, 'camWorldPos:', camera.getWorldPosition(), 'pPos:', pl.position, 'pWorldPos:', pl.getWorldPosition());
+	//camera.position.x = pl.radius + 20;
+	//console.log('8', 'camPos:', camera.position, 'camWorldPos:', camera.getWorldPosition(), 'pPos:', pl.position, 'pWorldPos:', pl.getWorldPosition());
 
 	textureLoader = new THREE.TextureLoader();
 	textureLoader.crossOrigin = '';
@@ -131,13 +136,17 @@ function init() {
 	//console.log(currPlanet);
 	//currPlanet.mesh.add(camera);
 	//camera.position.x = currPlanet.radius + 20;
-	nearest(camera.position, scene, o => o instanceof SolarSystem, (ss, ssDist) => {
+/*
+	console.time('nearest');
+	nearest(camera.getWorldPosition(), scene, o => o instanceof SolarSystem, (ss, ssDist) => {
 		console.log('Nearest SolarSystem was:', ss, 'Dist was:', ssDist);
-		nearest(camera.position, ss, o => o instanceof Planet, (p, pDist) => {
+		nearest(camera.getWorldPosition(), ss, o => o instanceof Planet, (p, pDist) => {
+			console.timeEnd('nearest');
 			console.log('Nearest Planet was:', p, 'Dist was:', pDist);
-			console.log('Planet\'s distance to it\'s star was:', p.position.distanceTo(ss.position));
+			console.log('Planet\'s distance to it\'s star was:', p.getWorldPosition().distanceTo(ss.getWorldPosition()));
 		});
 	});
+*/
 }
 
 function nearest(pos, rootObj, filterCallback, callback) {
@@ -148,9 +157,11 @@ function nearest(pos, rootObj, filterCallback, callback) {
 		if (filterCallback(o)) {
 			if (tmp == null) {
 				tmp = o;
-				tmpDistance = pos.distanceTo(o.position);
+				tmpDistance = pos.distanceTo(o.getWorldPosition());
+				//console.log(o.getWorldPosition());
 			} else {
-				var tmpDistance2 = pos.distanceTo(o.position);
+				var tmpDistance2 = pos.distanceTo(o.getWorldPosition());
+				//console.log(o.getWorldPosition());
 				if (tmpDistance2 < tmpDistance) {
 					tmp = o;
 					tmpDistance = tmpDistance2;
@@ -159,7 +170,7 @@ function nearest(pos, rootObj, filterCallback, callback) {
 			traversedObjs++;
 		}
 	});
-	console.log('Traversed objects:', traversedObjs);
+	//console.log('Traversed objects:', traversedObjs);
 	callback(tmp, tmpDistance);
 }
 
@@ -185,11 +196,14 @@ function attachCamToPlanet() {
 	}
 }
 
+var n = 0;
+var nCalc = 0;
 function animate() {
 	requestAnimationFrame(animate);
 	var delta = clock.getDelta();
 	tick += delta * particleTimeScale;
 	if (tick < 0) tick = 0;
+	nCalc += delta;
 
 	solarSystems.forEach(s => s.update(delta));
 
@@ -223,6 +237,48 @@ function animate() {
 	hudCamStats.innerHTML += '<br> Pos: x=' + camera.position.x.toFixed(2) + ', y=' + camera.position.y.toFixed(2) + ', z=' + camera.position.z.toFixed(2);// + '<br>'
 	hudCamStats.innerHTML += '<br> Rot: pitch=' + pitch.toFixed(2) + ', yaw=' + yaw.toFixed(2) + ', roll=' + roll.toFixed(2);
 	hudCamStats.innerHTML += '<br> Speed: ' + controls.movementSpeed;
+
+	//console.log('nCalc:', nCalc);
+	// 1.0 = wait for minimum one second
+	if (nCalc >= 1.0) {
+		nCalc = 0;
+		if (camera.parent != null && camera.parent.parent != null && camera.parent.parent instanceof Planet) {
+			var p = camera.parent.parent;
+			var dist = camera.getWorldPosition().distanceTo(p.getWorldPosition());
+			console.log('dist > p.radius+200 ==', dist > (p.radius + 200));
+			if (dist > (p.radius + 200)) {
+				//console.log('4', 'camPos:', camera.position, 'camWorldPos:', camera.getWorldPosition(), 'pPos:', p.position, 'pWorldPos:', p.getWorldPosition());
+				var camWorldPosTmp = camera.getWorldPosition();
+				scene.add(camera);
+				camera.position.x = camWorldPosTmp.x;
+				camera.position.y = camWorldPosTmp.y;
+				camera.position.z = camWorldPosTmp.z;
+				//console.log('5', 'camPos:', camera.position, 'camWorldPos:', camera.getWorldPosition(), 'pPos:', p.position, 'pWorldPos:', p.getWorldPosition());
+			}
+		} else {
+			console.time('nearest');
+			//var camWorldPos = camera.getWorldPosition();
+			nearest(camera.position, scene, o => o instanceof SolarSystem, (ss, ssDist) => {
+				//console.log('Nearest SolarSystem was:', ss, 'Dist was:', ssDist);
+				nearest(camera.position, ss, o => o instanceof Planet, (p, pDist) => {
+					console.log(n++);
+					console.timeEnd('nearest');
+					console.log('Nearest Planet was:', p, 'Dist was:', pDist);
+					var dist = camera.position.distanceTo(p.getWorldPosition());
+					//console.log('dist < p.radius+200 ==', dist < (p.radius + 200));
+					if (camera.position.distanceTo(p.getWorldPosition()) < (p.radius + 200)) {
+						//console.log('1', 'camPos:', camera.position, 'camWorldPos:', camera.getWorldPosition(), 'pPos:', p.position, 'pWorldPos:', p.getWorldPosition());
+						p.mesh.add(camera);
+						camera.position.x = p.radius + 20;
+						camera.position.y = 0;
+						camera.position.z = 0;
+						//console.log('3', 'camPos:', camera.position, 'camWorldPos:', camera.getWorldPosition(), 'pPos:', p.position, 'pWorldPos:', p.getWorldPosition());
+					}
+					//console.log('Planet\'s distance to it\'s star was:', p.getWorldPosition().distanceTo(ss.getWorldPosition()));
+				});
+			});
+		}
+	}
 }
 
 function onWindowResize(event) {
