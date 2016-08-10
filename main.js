@@ -11,9 +11,6 @@ var particleSystem, particleOption;
 var particleTimeScale = 0.1, particleMax = 25000, particleSpawnRate = 15000;
 var textureLoader;
 
-var RAD_TO_DEG = 180 / Math.PI;
-var DEG_TO_RAD = Math.PI / 180;
-
 var hud, hudCamStats;
 
 var UNIVERSE_RADIUS = 1e6;
@@ -23,11 +20,6 @@ var solarSystems = [];
 var currPlanet = null;
 
 init();
-
-// Gibt eine Zufallszahl zwischen min (inklusive) und max (exklusive) zurück
-function randomInt(min, max) {
-	return Math.floor(Math.random() * (max - min)) + min;
-}
 
 function init() {
 	scene = new THREE.Scene();
@@ -47,8 +39,8 @@ function init() {
 
 	for (var i = 0; i < MAX_SOLAR_SYSTEMS; i++) {
 		var solarSystem = SolarSystem.generate();
-		solarSystem.position.set(randomInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS), randomInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS), randomInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS));
-		solarSystem.rotation.set(randomInt(0, 360) * DEG_TO_RAD, randomInt(0, 360) * DEG_TO_RAD, randomInt(0, 360) * DEG_TO_RAD);
+		solarSystem.position.set(THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS), THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS), THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS));
+		solarSystem.rotation.set(THREE.Math.degToRad(THREE.Math.randInt(0, 360)), THREE.Math.degToRad(THREE.Math.randInt(0, 360)), THREE.Math.degToRad(THREE.Math.randInt(0, 360)));
 		solarSystems.push(solarSystem);
 	}
 
@@ -163,7 +155,7 @@ function animate() {
 		//particleOptions.position.y = camera.position.y;
 		//particleOptions.position.z = camera.position.z;
 		for (var i = 0; i < particleSpawnRate  * delta; i++) {
-			particleOptions.position.set(randomInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS)*2, randomInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS)*2, randomInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS)*2);
+			particleOptions.position.set(THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS)*2, THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS)*2, THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS)*2);
 			particleSystem.spawnParticle(particleOptions);
 		}
 	}
@@ -173,9 +165,9 @@ function animate() {
 	composer.render(delta);
 	stats.update();
 
-	var pitch = camera.rotation.x * RAD_TO_DEG;
-	var yaw = camera.rotation.y * -RAD_TO_DEG;
-	var roll = camera.rotation.z * -RAD_TO_DEG;
+	var pitch = THREE.Math.radToDeg(camera.rotation.x);
+	var yaw = -THREE.Math.radToDeg(camera.rotation.y);
+	var roll = -THREE.Math.radToDeg(camera.rotation.z);
 	if (yaw <= 0) yaw += 360;
 	if (roll <= 0) roll += 360;
 	hudCamStats.innerHTML = 'Camera:'
