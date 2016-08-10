@@ -36,10 +36,6 @@ function init() {
 	camera = new THREE.PerspectiveCamera(65, aspect, 0.1, 1e6);
 	scene.add(camera);
 	camera.rotation.reorder('YXZ');
-	//camera.position.y = 5000;
-	//camera.position.z = 1500;
-	//camera.position.z = 15000;
-	//camera.position.z = 10;
 	camera.lookAt(scene.position);
 
 	controls = new THREE.FlyControls(camera);
@@ -57,13 +53,6 @@ function init() {
 	}
 
 	solarSystems.forEach(s => scene.add(s));
-	//console.log(solarSystems[0].planets[1].mesh);
-	//var pl = solarSystems[0].planets[1];
-	//console.log('6', 'camPos:', camera.position, 'camWorldPos:', camera.getWorldPosition(), 'pPos:', pl.position, 'pWorldPos:', pl.getWorldPosition());
-	//pl.mesh.add(camera);
-	//console.log('7', 'camPos:', camera.position, 'camWorldPos:', camera.getWorldPosition(), 'pPos:', pl.position, 'pWorldPos:', pl.getWorldPosition());
-	//camera.position.x = pl.radius + 20;
-	//console.log('8', 'camPos:', camera.position, 'camWorldPos:', camera.getWorldPosition(), 'pPos:', pl.position, 'pWorldPos:', pl.getWorldPosition());
 
 	textureLoader = new THREE.TextureLoader();
 	textureLoader.crossOrigin = '';
@@ -126,27 +115,11 @@ function init() {
 	var renderPass = new THREE.RenderPass(scene, camera);
 	renderPass.renderToScreen = true;
 	composer.addPass(renderPass);
-//	console.log(camera);
 
 //	var dotScreenPass = new THREE.ShaderPass(THREE.DotScreenShader);
 //	dotScreenPass.uniforms['scale'].value = 3;
 //	dotScreenPass.renderToScreen = true;
 //	composer.addPass(dotScreenPass);
-	//attachCamToPlanet();
-	//console.log(currPlanet);
-	//currPlanet.mesh.add(camera);
-	//camera.position.x = currPlanet.radius + 20;
-/*
-	console.time('nearest');
-	nearest(camera.getWorldPosition(), scene, o => o instanceof SolarSystem, (ss, ssDist) => {
-		console.log('Nearest SolarSystem was:', ss, 'Dist was:', ssDist);
-		nearest(camera.getWorldPosition(), ss, o => o instanceof Planet, (p, pDist) => {
-			console.timeEnd('nearest');
-			console.log('Nearest Planet was:', p, 'Dist was:', pDist);
-			console.log('Planet\'s distance to it\'s star was:', p.getWorldPosition().distanceTo(ss.getWorldPosition()));
-		});
-	});
-*/
 }
 
 function nearest(pos, rootObj, filterCallback, callback) {
@@ -174,28 +147,6 @@ function nearest(pos, rootObj, filterCallback, callback) {
 	callback(tmp, tmpDistance);
 }
 
-function attachCamToPlanet() {
-	if (currPlanet == null) {
-		var tmpPlanet = null;
-		var tmpDistance = null;
-		scene.traverse(o => {
-			if (o instanceof Planet) {
-				if (tmpPlanet == null) {
-					tmpPlanet = o;
-					tmpDistance = camera.position.distanceTo(tmpPlanet.position);
-				} else {
-					var tmpDistance2 = camera.position.distanceTo(o.position);
-					if (tmpDistance2 < tmpDistance) {
-						tmpPlanet = o;
-						tmpDistance = tmpDistance2;
-					}
-				}
-			}
-		});
-		currPlanet = tmpPlanet;
-	}
-}
-
 var n = 0;
 var nCalc = 0;
 function animate() {
@@ -218,12 +169,6 @@ function animate() {
 	}
 	particleSystem.update(tick);
 
-//	var starRotationYSpeed = 0.2 * delta;
-//	star.rotation.y += starRotationYSpeed;
-
-	//planet1.rotation.x += 0.15 * delta;
-//	planet1.rotation.y += -starRotationYSpeed + (0.4 * delta);
-
 	controls.update(delta);
 	composer.render(delta);
 	stats.update();
@@ -245,34 +190,20 @@ function animate() {
 		if (camera.parent != null && camera.parent.parent != null && camera.parent.parent instanceof Planet) {
 			var p = camera.parent.parent;
 			var dist = camera.getWorldPosition().distanceTo(p.getWorldPosition());
-			console.log('dist > p.radius+200 ==', dist > (p.radius + 200));
 			if (dist > (p.radius + 200)) {
-				//console.log('4', 'camPos:', camera.position, 'camWorldPos:', camera.getWorldPosition(), 'pPos:', p.position, 'pWorldPos:', p.getWorldPosition());
-				var camWorldPosTmp = camera.getWorldPosition();
-				scene.add(camera);
-				camera.position.x = camWorldPosTmp.x;
-				camera.position.y = camWorldPosTmp.y;
-				camera.position.z = camWorldPosTmp.z;
-				//console.log('5', 'camPos:', camera.position, 'camWorldPos:', camera.getWorldPosition(), 'pPos:', p.position, 'pWorldPos:', p.getWorldPosition());
+				THREE.SceneUtils.detach(camera, camera.parent, scene);
 			}
 		} else {
 			console.time('nearest');
-			//var camWorldPos = camera.getWorldPosition();
 			nearest(camera.position, scene, o => o instanceof SolarSystem, (ss, ssDist) => {
 				//console.log('Nearest SolarSystem was:', ss, 'Dist was:', ssDist);
 				nearest(camera.position, ss, o => o instanceof Planet, (p, pDist) => {
 					console.log(n++);
 					console.timeEnd('nearest');
-					console.log('Nearest Planet was:', p, 'Dist was:', pDist);
+					//console.log('Nearest Planet was:', p, 'Dist was:', pDist);
 					var dist = camera.position.distanceTo(p.getWorldPosition());
-					//console.log('dist < p.radius+200 ==', dist < (p.radius + 200));
-					if (camera.position.distanceTo(p.getWorldPosition()) < (p.radius + 200)) {
-						//console.log('1', 'camPos:', camera.position, 'camWorldPos:', camera.getWorldPosition(), 'pPos:', p.position, 'pWorldPos:', p.getWorldPosition());
-						p.mesh.add(camera);
-						camera.position.x = p.radius + 20;
-						camera.position.y = 0;
-						camera.position.z = 0;
-						//console.log('3', 'camPos:', camera.position, 'camWorldPos:', camera.getWorldPosition(), 'pPos:', p.position, 'pWorldPos:', p.getWorldPosition());
+					if (dist < (p.radius + 200)) {
+						THREE.SceneUtils.attach(camera, scene, p.mesh);
 					}
 					//console.log('Planet\'s distance to it\'s star was:', p.getWorldPosition().distanceTo(ss.getWorldPosition()));
 				});
