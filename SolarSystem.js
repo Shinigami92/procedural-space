@@ -25,7 +25,10 @@ SolarSystem.generate = function(parameters) {
 	} else {
 		var starRadius = parameters.star.radius !== undefined ? parameters.star.radius : THREE.Math.randInt(1500, 6000);
 		var starRotationSpeed = parameters.star.rotationSpeed !== undefined ? parameters.star.rotationSpeed : 0;
-		star = new Star({radius: starRadius, rotationSpeed: starRotationSpeed});
+		star = new Star({
+			radius: starRadius,
+			rotationSpeed: starRotationSpeed
+		});
 	}
 
 	var planetCount = THREE.Math.randInt(3, 10);
@@ -37,7 +40,12 @@ SolarSystem.generate = function(parameters) {
 		var pos = i + 1;
 		var planetRadius = THREE.Math.randInt(planetRadiusMin, planetRadiusMax);
 		var planetColor = new THREE.Color().setHSL(Math.random(), 1, 0.5);
-		var p = new Planet({radius: planetRadius, color: planetColor, rotationSpeed: (Math.random() * (0.3 - 0.05) + 0.05) * 0.1, orbitalSpeed: (0.1 * (planetCount / pos) + (Math.random() / 5 - 0.1)) * 0.01});
+		var p = new Planet({
+			radius: planetRadius,
+			color: planetColor,
+			rotationSpeed: (Math.random() * (0.3 - 0.05) + 0.05) * 0.1,
+			orbitalSpeed: (0.1 * (planetCount / pos) + (Math.random() / 5 - 0.1)) * 0.01
+		});
 		nextPlanetPosX += planetRadius * 2 + THREE.Math.randInt(planetRadiusMax * 5, planetRadiusMax * 15);
 		p.position.x = -nextPlanetPosX;
 		planets[i] = p;

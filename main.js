@@ -8,7 +8,9 @@ var clock = new THREE.Clock();
 var tick = 0;
 
 var particleSystem, particleOption;
-var particleTimeScale = 0.1, particleMax = 25000, particleSpawnRate = 15000;
+var particleTimeScale = 0.1,
+	particleMax = 25000,
+	particleSpawnRate = 15000;
 var textureLoader;
 
 var hud, hudCamStats;
@@ -70,18 +72,20 @@ function init() {
 
 	particleOptions = {
 		position: new THREE.Vector3(0, 0, 0),
-		positionRandomness: 100,//.3,
+		positionRandomness: 100, //.3,
 		velocity: new THREE.Vector3(0, 0, 0),
-		velocityRandomness: 0,//.5,
-		color: 0xffffff,//0xaa88ff,
-		colorRandomness: 0,//.2,
-		turbulence: 0,//.5,
-		lifetime: 1,//2,
-		size: 1,//5,
-		sizeRandomness: 0.2//1
+		velocityRandomness: 0, //.5,
+		color: 0xffffff, //0xaa88ff,
+		colorRandomness: 0, //.2,
+		turbulence: 0, //.5,
+		lifetime: 1, //2,
+		size: 1, //5,
+		sizeRandomness: 0.2 //1
 	};
 
-	renderer = new THREE.WebGLRenderer({antialias: true});
+	renderer = new THREE.WebGLRenderer({
+		antialias: true
+	});
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 	//renderer.sortObjects = false;
@@ -108,10 +112,10 @@ function init() {
 	renderPass.renderToScreen = true;
 	composer.addPass(renderPass);
 
-//	var dotScreenPass = new THREE.ShaderPass(THREE.DotScreenShader);
-//	dotScreenPass.uniforms['scale'].value = 3;
-//	dotScreenPass.renderToScreen = true;
-//	composer.addPass(dotScreenPass);
+	//	var dotScreenPass = new THREE.ShaderPass(THREE.DotScreenShader);
+	//	dotScreenPass.uniforms['scale'].value = 3;
+	//	dotScreenPass.renderToScreen = true;
+	//	composer.addPass(dotScreenPass);
 }
 
 function nearest(pos, rootObj, filterCallback, callback) {
@@ -120,7 +124,7 @@ function nearest(pos, rootObj, filterCallback, callback) {
 	var traversedObjs = 0;
 	rootObj.traverse(o => {
 		if (filterCallback(o)) {
-			if (tmp == null) {
+			if (tmp === null) {
 				tmp = o;
 				tmpDistance = pos.distanceTo(o.getWorldPosition());
 				//console.log(o.getWorldPosition());
@@ -141,6 +145,7 @@ function nearest(pos, rootObj, filterCallback, callback) {
 
 var n = 0;
 var nCalc = 0;
+
 function animate() {
 	requestAnimationFrame(animate);
 	var delta = clock.getDelta();
@@ -154,8 +159,8 @@ function animate() {
 		//particleOptions.position.x = camera.position.x;
 		//particleOptions.position.y = camera.position.y;
 		//particleOptions.position.z = camera.position.z;
-		for (var i = 0; i < particleSpawnRate  * delta; i++) {
-			particleOptions.position.set(THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS)*2, THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS)*2, THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS)*2);
+		for (var i = 0; i < particleSpawnRate * delta; i++) {
+			particleOptions.position.set(THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS) * 2, THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS) * 2, THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS) * 2);
 			particleSystem.spawnParticle(particleOptions);
 		}
 	}
@@ -170,8 +175,8 @@ function animate() {
 	var roll = -THREE.Math.radToDeg(camera.rotation.z);
 	if (yaw <= 0) yaw += 360;
 	if (roll <= 0) roll += 360;
-	hudCamStats.innerHTML = 'Camera:'
-	hudCamStats.innerHTML += '<br> Pos: x=' + camera.position.x.toFixed(2) + ', y=' + camera.position.y.toFixed(2) + ', z=' + camera.position.z.toFixed(2);// + '<br>'
+	hudCamStats.innerHTML = 'Camera:';
+	hudCamStats.innerHTML += '<br> Pos: x=' + camera.position.x.toFixed(2) + ', y=' + camera.position.y.toFixed(2) + ', z=' + camera.position.z.toFixed(2); // + '<br>'
 	hudCamStats.innerHTML += '<br> Rot: pitch=' + pitch.toFixed(2) + ', yaw=' + yaw.toFixed(2) + ', roll=' + roll.toFixed(2);
 	hudCamStats.innerHTML += '<br> Speed: ' + controls.movementSpeed;
 
@@ -179,7 +184,7 @@ function animate() {
 	// 1.0 = wait for minimum one second
 	if (nCalc >= 1.0) {
 		nCalc = 0;
-		if (camera.parent != null && camera.parent.parent != null && camera.parent.parent instanceof Planet) {
+		if (camera.parent !== null && camera.parent.parent !== null && camera.parent.parent instanceof Planet) {
 			var p = camera.parent.parent;
 			var dist = camera.getWorldPosition().distanceTo(p.getWorldPosition());
 			if (dist > (p.radius + 200)) {
@@ -219,7 +224,7 @@ function onWindowResize(event) {
 
 function onKeyDown(event) {
 	//console.log('keydown', event);
-	switch(event.keyCode) {
+	switch (event.keyCode) {
 		case 107: // NumpadAdd | +
 		case 187: // BracketRight | +
 			controls.movementSpeed *= 2;
@@ -236,13 +241,12 @@ function onKeyDown(event) {
 
 function onKeyPress(event) {
 	//console.log('keypress', event);
-	switch(event.keyCode) {
-	}
+	switch (event.keyCode) {}
 }
 
 function onKeyUp(event) {
 	//console.log('keyup', event);
-	switch(event.keyCode) {
+	switch (event.keyCode) {
 		case 16: // ShiftLeft
 			controls.movementSpeed /= 2;
 			break;

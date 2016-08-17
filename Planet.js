@@ -9,7 +9,10 @@ Planet = function(parameters) {
 
 	var mesh = new THREE.Mesh(
 		new THREE.SphereGeometry(radius, 32, 32),
-		new THREE.MeshStandardMaterial({color: color, wireframe: false})
+		new THREE.MeshStandardMaterial({
+			color: color,
+			wireframe: false
+		})
 	);
 	mesh.receiveShadow = true;
 	mesh.castShadow = true;
