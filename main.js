@@ -1,25 +1,22 @@
 // Project
-var SCREEN_WIDTH = window.innerWidth;
-var SCREEN_HEIGHT = window.innerHeight;
-var aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
+var screenWidth = window.innerWidth;
+var screenHeight = window.innerHeight;
+var aspect = screenWidth / screenHeight;
 
 var scene, camera, renderer, controls, stats;
-var clock = new THREE.Clock();
+const CLOCK = new THREE.Clock();
 var tick = 0;
 
 var particleSystem, particleOption;
 var particleTimeScale = 0.1,
 	particleMax = 25000,
 	particleSpawnRate = 15000;
-var textureLoader;
 
 var hud, hudCamStats;
 
-var UNIVERSE_RADIUS = 1e6;
-var MAX_SOLAR_SYSTEMS = 25;
-var solarSystems = [];
-
-var currPlanet = null;
+const UNIVERSE_RADIUS = 1e6;
+const MAX_SOLAR_SYSTEMS = 25;
+const SOLAR_SYSTEMS = [];
 
 init();
 
@@ -39,20 +36,20 @@ function init() {
 
 	scene.add(new THREE.AmbientLight(0x404040));
 
-	for (var i = 0; i < MAX_SOLAR_SYSTEMS; i++) {
-		var solarSystem = SolarSystem.generate();
+	for (let i = 0; i < MAX_SOLAR_SYSTEMS; i++) {
+		let solarSystem = SolarSystem.generate();
 		solarSystem.position.set(THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS), THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS), THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS));
 		solarSystem.rotation.set(THREE.Math.degToRad(THREE.Math.randInt(0, 360)), THREE.Math.degToRad(THREE.Math.randInt(0, 360)), THREE.Math.degToRad(THREE.Math.randInt(0, 360)));
-		solarSystems.push(solarSystem);
+		SOLAR_SYSTEMS.push(solarSystem);
 	}
 
-	solarSystems.forEach(s => scene.add(s));
+	SOLAR_SYSTEMS.forEach(s => scene.add(s));
 
-	textureLoader = new THREE.TextureLoader();
-	textureLoader.crossOrigin = '';
+	const TEXTURE_LOADER = new THREE.TextureLoader();
+	TEXTURE_LOADER.crossOrigin = '';
 
-	textureLoader.load('http://threejs.org/examples/textures/particle2.png', psTex => {
-		textureLoader.load('http://threejs.org/examples/textures/perlin-512.png', pnTex => {
+	TEXTURE_LOADER.load('http://threejs.org/examples/textures/particle2.png', psTex => {
+		TEXTURE_LOADER.load('http://threejs.org/examples/textures/perlin-512.png', pnTex => {
 			particleSystem = new THREE.GPUParticleSystem({
 				maxParticles: particleMax,
 				particleSpriteTex: psTex,
@@ -65,8 +62,8 @@ function init() {
 
 	/*particleSystem = new THREE.GPUParticleSystem({
 		maxParticles: particleMax,
-		particleSpriteTex: textureLoader.load('http://threejs.org/examples/textures/particle2.png'),
-		particleNoiseTex: textureLoader.load('http://threejs.org/examples/textures/perlin-512.png')
+		particleSpriteTex: TEXTURE_LOADER.load('http://threejs.org/examples/textures/particle2.png'),
+		particleNoiseTex: TEXTURE_LOADER.load('http://threejs.org/examples/textures/perlin-512.png')
 	});
 	scene.add(particleSystem);*/
 
@@ -87,7 +84,7 @@ function init() {
 		antialias: true
 	});
 	renderer.setPixelRatio(window.devicePixelRatio);
-	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	renderer.setSize(screenWidth, screenHeight);
 	//renderer.sortObjects = false;
 	renderer.domElement.id = 'viewport';
 
@@ -119,9 +116,9 @@ function init() {
 }
 
 function nearest(pos, rootObj, filterCallback, callback) {
-	var tmp = null;
-	var tmpDistance = null;
-	var traversedObjs = 0;
+	let tmp = null;
+	let tmpDistance = null;
+	let traversedObjs = 0;
 	rootObj.traverse(o => {
 		if (filterCallback(o)) {
 			if (tmp === null) {
@@ -129,7 +126,7 @@ function nearest(pos, rootObj, filterCallback, callback) {
 				tmpDistance = pos.distanceTo(o.getWorldPosition());
 				//console.log(o.getWorldPosition());
 			} else {
-				var tmpDistance2 = pos.distanceTo(o.getWorldPosition());
+				let tmpDistance2 = pos.distanceTo(o.getWorldPosition());
 				//console.log(o.getWorldPosition());
 				if (tmpDistance2 < tmpDistance) {
 					tmp = o;
@@ -148,18 +145,18 @@ var nCalc = 0;
 
 function animate() {
 	requestAnimationFrame(animate);
-	var delta = clock.getDelta();
+	var delta = CLOCK.getDelta();
 	tick += delta * particleTimeScale;
 	if (tick < 0) tick = 0;
 	nCalc += delta;
 
-	solarSystems.forEach(s => s.update(delta));
+	SOLAR_SYSTEMS.forEach(s => s.update(delta));
 
 	if (delta > 0) {
 		//particleOptions.position.x = camera.position.x;
 		//particleOptions.position.y = camera.position.y;
 		//particleOptions.position.z = camera.position.z;
-		for (var i = 0; i < particleSpawnRate * delta; i++) {
+		for (let i = 0; i < particleSpawnRate * delta; i++) {
 			particleOptions.position.set(THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS) * 2, THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS) * 2, THREE.Math.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS) * 2);
 			particleSystem.spawnParticle(particleOptions);
 		}
@@ -170,23 +167,23 @@ function animate() {
 	composer.render(delta);
 	stats.update();
 
-	var pitch = THREE.Math.radToDeg(camera.rotation.x);
-	var yaw = -THREE.Math.radToDeg(camera.rotation.y);
-	var roll = -THREE.Math.radToDeg(camera.rotation.z);
+	let pitch = THREE.Math.radToDeg(camera.rotation.x);
+	let yaw = -THREE.Math.radToDeg(camera.rotation.y);
+	let roll = -THREE.Math.radToDeg(camera.rotation.z);
 	if (yaw <= 0) yaw += 360;
 	if (roll <= 0) roll += 360;
-	hudCamStats.innerHTML = 'Camera:';
-	hudCamStats.innerHTML += '<br> Pos: x=' + camera.position.x.toFixed(2) + ', y=' + camera.position.y.toFixed(2) + ', z=' + camera.position.z.toFixed(2); // + '<br>'
-	hudCamStats.innerHTML += '<br> Rot: pitch=' + pitch.toFixed(2) + ', yaw=' + yaw.toFixed(2) + ', roll=' + roll.toFixed(2);
-	hudCamStats.innerHTML += '<br> Speed: ' + controls.movementSpeed;
+	hudCamStats.innerHTML = `Camera:
+ Pos: x=${camera.position.x.toFixed(2)}, y=${camera.position.y.toFixed(2)}, z=${camera.position.z.toFixed(2)}
+ Rot: pitch=${pitch.toFixed(2)}, yaw=${yaw.toFixed(2)}, roll=${roll.toFixed(2)}
+ Speed: ${controls.movementSpeed}`;
 
 	//console.log('nCalc:', nCalc);
 	// 1.0 = wait for minimum one second
 	if (nCalc >= 1.0) {
 		nCalc = 0;
 		if (camera.parent !== null && camera.parent.parent !== null && camera.parent.parent instanceof Planet) {
-			var p = camera.parent.parent;
-			var dist = camera.getWorldPosition().distanceTo(p.getWorldPosition());
+			let p = camera.parent.parent;
+			let dist = camera.getWorldPosition().distanceTo(p.getWorldPosition());
 			if (dist > (p.radius + 200)) {
 				THREE.SceneUtils.detach(camera, camera.parent, scene);
 			}
@@ -198,7 +195,7 @@ function animate() {
 					console.log(n++);
 					console.timeEnd('nearest');
 					//console.log('Nearest Planet was:', p, 'Dist was:', pDist);
-					var dist = camera.position.distanceTo(p.getWorldPosition());
+					let dist = camera.position.distanceTo(p.getWorldPosition());
 					if (dist < (p.radius + 200)) {
 						THREE.SceneUtils.attach(camera, scene, p.mesh);
 					}
@@ -210,11 +207,11 @@ function animate() {
 }
 
 function onWindowResize(event) {
-	SCREEN_WIDTH = window.innerWidth;
-	SCREEN_HEIGHT = window.innerHeight;
-	aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
+	screenWidth = window.innerWidth;
+	screenHeight = window.innerHeight;
+	aspect = screenWidth / screenHeight;
 
-	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	renderer.setSize(screenWidth, screenHeight);
 
 	camera.aspect = aspect;
 	camera.updateProjectionMatrix();
