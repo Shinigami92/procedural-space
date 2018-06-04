@@ -1,0 +1,20 @@
+{
+	"compileOnSave": true,
+	"compilerOptions": {
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitAny": true,
+		"noImplicitReturns": true,
+		"noImplicitThis": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"plugins": [
+			{
+				"name": "tslint-language-service"
+			}
+		],
+		"strictNullChecks": true,
+		"target": "es6",
+		"lib": ["es2017", "dom"]
+	},
+	"exclude": ["node_modules", "dist"]
+}

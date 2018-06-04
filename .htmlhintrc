@@ -1,0 +1,23 @@
+{
+	"attr-no-duplication": true,
+	"attr-unsafe-chars": true,
+	"attr-value-double-quotes": true,
+	"doctype-first": false,
+	"doctype-html5": true,
+	"id-class-ad-disabled": true,
+	"id-class-value": "dash",
+	"id-unique": true,
+	"inline-style-disabled": false,
+	"space-tab-mixed-disabled": "tab",
+	"spec-char-escape": true,
+	"src-not-empty": true,
+	"style-disabled": true,
+	"tag-pair": true,
+	"tag-self-close": false,
+	"tagname-lowercase": true,
+	"title-require": true,
+	"csslint": {
+		"display-property-grouping": true,
+		"known-properties": true
+	}
+}
