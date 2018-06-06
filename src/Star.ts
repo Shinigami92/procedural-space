@@ -1,25 +1,10 @@
-import {
-	MeshBasicMaterial,
-	Object3D,
-	Mesh,
-	SphereGeometry,
-	PointLight
-} from 'three';
+import { Mesh, MeshBasicMaterial, Object3D, PointLight, SphereGeometry } from 'three';
 
 export default class Star extends Object3D {
 	private mesh: Mesh;
 	private rotationSpeed: number;
 
-	constructor({ radius = 800, rotationSpeed = 0 }) {
-		if (typeof radius !== 'number')
-			throw new TypeError(
-				'expected type of radius was Number, got ' + typeof radius
-			);
-		if (typeof rotationSpeed !== 'number')
-			throw new TypeError(
-				'expected type of rotationSpeed was Number, got ' +
-					typeof rotationSpeed
-			);
+	constructor({ radius = 800, rotationSpeed = 0 }: { radius: number; rotationSpeed: number }) {
 		super();
 		this.rotationSpeed = rotationSpeed;
 		this.mesh = new Mesh(
@@ -30,11 +15,11 @@ export default class Star extends Object3D {
 		this.add(this.mesh);
 	}
 
-	get radius() {
+	get radius(): number {
 		return (this.mesh.geometry as SphereGeometry).parameters.radius;
 	}
 
-	update(delta: number) {
+	public update(delta: number): void {
 		this.mesh.rotation.y += this.rotationSpeed * delta;
 	}
 }

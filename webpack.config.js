@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ProvidePlugin = require('webpack').ProvidePlugin;
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = {
@@ -23,12 +24,13 @@ module.exports = {
 	},
 	plugins: [
 		new CleanWebpackPlugin(['dist']),
+		new ProvidePlugin({ THREE: 'three' }),
 		new HtmlWebpackPlugin({
 			title: 'Procedural Space - by Shinigami',
 			meta: {
-				viewport:
-					'width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0'
-			}
+				viewport: 'width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0'
+			},
+			template: 'src/index.html'
 		})
 	],
 	output: {
