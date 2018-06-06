@@ -1,26 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<title>Procedural Space - by Shinigami</title>
-		<link rel="stylesheet" type="text/css" href="main.css">
-	</head>
-	<body>
-		<!-- Libs -->
-		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.min.js"></script>
-		<script type="text/javascript" src="http://threejs.org/examples/js/libs/stats.min.js"></script>
-		<script type="text/javascript" src="http://threejs.org/examples/js/controls/FlyControls.js"></script>
-		<script type="text/javascript" src="http://threejs.org/examples/js/shaders/CopyShader.js"></script>
-		<script type="text/javascript" src="http://threejs.org/examples/js/shaders/DotScreenShader.js"></script>
-		<script type="text/javascript" src="http://threejs.org/examples/js/postprocessing/EffectComposer.js"></script>
-		<script type="text/javascript" src="http://threejs.org/examples/js/postprocessing/ShaderPass.js"></script>
-		<script type="text/javascript" src="http://threejs.org/examples/js/postprocessing/RenderPass.js"></script>
-		<script type="text/javascript" src="http://threejs.org/examples/js/GPUParticleSystem.js"></script>
-		<!-- App -->
-		<script type="text/javascript" src="Planet.js"></script>
-		<script type="text/javascript" src="Star.js"></script>
-		<script type="text/javascript" src="SolarSystem.js"></script>
-		<script type="text/javascript" src="main.js"></script>
-	</body>
+		<meta charset="UTF-8">
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>
+			Procedural Space - by Shinigami
+		</title>
+		<!-- <link rel="stylesheet" type="text/css" href="main.css"> -->
+		<style>
+			body {
+				margin: 0;
+				overflow: hidden;
+				background-color: black;
+			}
+
+			#viewport {
+				cursor: crosshair;
+			}
+
+			#hud {
+				position: absolute;
+				color: rgba(0, 229, 229, 0.9);
+				top: 48px;
+				left: 0;
+				font-family: monospace;
+				background-color: rgba(0, 22, 49, 0.5);
+				padding-left: 0.5em;
+				padding-right: 0.5em;
+				/*background-color: red;*/
+			}
+
+		</style>
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"></head>
+	<body><script type="text/javascript" src="main.bundle.js"></script></body>
 </html>
