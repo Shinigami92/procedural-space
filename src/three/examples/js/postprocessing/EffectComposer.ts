@@ -1,6 +1,7 @@
 import { LinearFilter, RGBAFormat, WebGLRenderer, WebGLRenderTarget } from 'three';
 import { CopyShader } from '../shaders/CopyShader';
 import { ClearMaskPass, MaskPass } from './MaskPass';
+import { Pass } from './Pass';
 import { ShaderPass } from './ShaderPass';
 
 /* tslint:disable */
@@ -126,28 +127,4 @@ export class EffectComposer {
 			this.passes[i].setSize(width, height);
 		}
 	}
-}
-
-export abstract class Pass {
-	// if set to true, the pass is processed by the composer
-	public enabled = true;
-
-	// if set to true, the pass indicates to swap read and write buffer after rendering
-	public needsSwap = true;
-
-	// if set to true, the pass clears its buffer before rendering
-	public clear = false;
-
-	// if set to true, the result of the pass is rendered to screen
-	public renderToScreen = false;
-
-	public setSize(_width: number, _height: number) {}
-
-	public abstract render(
-		renderer: WebGLRenderer,
-		writeBuffer: WebGLRenderTarget,
-		readBuffer: WebGLRenderTarget,
-		delta: number,
-		maskActive?: boolean
-	): void;
 }

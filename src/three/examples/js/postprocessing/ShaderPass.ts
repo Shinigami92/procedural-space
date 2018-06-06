@@ -10,7 +10,7 @@ import {
 	WebGLRenderer,
 	WebGLRenderTarget
 } from 'three';
-import { Pass } from './EffectComposer';
+import { Pass } from './Pass';
 
 /* tslint:disable */
 
