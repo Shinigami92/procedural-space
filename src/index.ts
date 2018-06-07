@@ -8,6 +8,7 @@ import {
 	PerspectiveCamera,
 	Scene,
 	SceneUtils,
+	Texture,
 	TextureLoader,
 	Vector3,
 	WebGLRenderer
@@ -25,6 +26,8 @@ import {
 import Planet from './Planet';
 import SolarSystem from './SolarSystem';
 import { FlyControls } from './three/examples/js/controls/FlyControls';
+import { SpawnParticleOptions } from './three/examples/js/GPUParticleContainer';
+import { GPUParticleSystem } from './three/examples/js/GPUParticleSystem';
 import { EffectComposer } from './three/examples/js/postprocessing/EffectComposer';
 import { RenderPass } from './three/examples/js/postprocessing/RenderPass';
 
@@ -43,22 +46,11 @@ let controls: FlyControls;
 const CLOCK: Clock = new Clock();
 let tick: number = 0;
 
-// const particleSystem?: any;
-let particleOptions: {
-	position: Vector3;
-	positionRandomness: number;
-	velocity: Vector3;
-	velocityRandomness: number;
-	color: number;
-	colorRandomness: number;
-	turbulence: number;
-	lifetime: number;
-	size: number;
-	sizeRandomness: number;
-};
+let particleSystem: GPUParticleSystem;
+let particleOptions: SpawnParticleOptions | undefined;
 const particleTimeScale: number = 0.1;
-// const particleMax: number = 25000;
-const particleSpawnRate: number = 15000;
+const particleMax: number = 250_000;
+const particleSpawnRate: number = 15_000;
 
 let hud: HTMLDivElement;
 let hudCamStats: HTMLPreElement;
@@ -105,42 +97,36 @@ function init(): void {
 	const TEXTURE_LOADER: TextureLoader = new TextureLoader();
 	TEXTURE_LOADER.crossOrigin = '';
 
-	// TEXTURE_LOADER.load(
-	// 	'http://threejs.org/examples/textures/particle2.png',
-	// 	(psTex) => {
-	// 		TEXTURE_LOADER.load(
-	// 			'http://threejs.org/examples/textures/perlin-512.png',
-	// 			(pnTex) => {
-	// 				particleSystem = new GPUParticleSystem({
-	// 					maxParticles: particleMax,
-	// 					particleSpriteTex: psTex,
-	// 					particleNoiseTex: pnTex
-	// 				});
-	// 				scene.add(particleSystem);
-	// 				animate();
-	// 			}
-	// 		);
-	// 	}
-	// );
+	TEXTURE_LOADER.load('textures/particle2.png', (psTex: Texture) => {
+		TEXTURE_LOADER.load('textures/perlin-512.png', (pnTex: Texture) => {
+			particleSystem = new GPUParticleSystem({
+				maxParticles: particleMax,
+				particleNoiseTex: pnTex,
+				particleSpriteTex: psTex
+			});
+			scene.add(particleSystem);
+			animate();
+		});
+	});
 
 	/*particleSystem = new GPUParticleSystem({
 		maxParticles: particleMax,
-		particleSpriteTex: TEXTURE_LOADER.load('http://threejs.org/examples/textures/particle2.png'),
-		particleNoiseTex: TEXTURE_LOADER.load('http://threejs.org/examples/textures/perlin-512.png')
+		particleSpriteTex: TEXTURE_LOADER.load('textures/particle2.png'),
+		particleNoiseTex: TEXTURE_LOADER.load('textures/perlin-512.png')
 	});
 	scene.add(particleSystem);*/
 
 	particleOptions = {
+		color: new Color(0xffffff),
+		colorRandomness: 0,
+		lifetime: 1,
 		position: new Vector3(0, 0, 0),
 		positionRandomness: 100,
-		velocity: new Vector3(0, 0, 0),
-		velocityRandomness: 0,
-		color: 0xffffff,
-		colorRandomness: 0,
+		size: 4,
+		sizeRandomness: 0.2,
 		turbulence: 0,
-		lifetime: 1,
-		size: 1,
-		sizeRandomness: 0.2
+		velocity: new Vector3(0, 0, 0),
+		velocityRandomness: 0
 	};
 
 	renderer = new WebGLRenderer({
@@ -177,7 +163,7 @@ function init(): void {
 	// dotScreenPass.renderToScreen = true;
 	// composer.addPass(dotScreenPass);
 
-	animate();
+	// animate();
 }
 
 function nearest(
@@ -231,19 +217,19 @@ function animate(): void {
 	SOLAR_SYSTEMS.forEach((s: SolarSystem) => s.update(delta));
 
 	if (delta > 0) {
-		// particleOptions.position.x = camera.position.x;
-		// particleOptions.position.y = camera.position.y;
-		// particleOptions.position.z = camera.position.z;
+		particleOptions!.position!.x = camera.position.x;
+		particleOptions!.position!.y = camera.position.y;
+		particleOptions!.position!.z = camera.position.z;
 		for (let i: number = 0; i < particleSpawnRate * delta; i++) {
-			particleOptions.position.set(
+			particleOptions!.position!.set(
 				ThreeMath.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS) * 2,
 				ThreeMath.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS) * 2,
 				ThreeMath.randInt(-UNIVERSE_RADIUS, UNIVERSE_RADIUS) * 2
 			);
-			// particleSystem.spawnParticle(particleOptions);
+			particleSystem.spawnParticle(particleOptions);
 		}
 	}
-	// particleSystem.update(tick);
+	particleSystem.update(tick);
 
 	controls.update(delta);
 	composer.render(delta);

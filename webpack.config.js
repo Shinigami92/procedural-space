@@ -1,5 +1,8 @@
+/* tslint:disable */
+
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ProvidePlugin = require('webpack').ProvidePlugin;
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 
@@ -25,6 +28,7 @@ module.exports = {
 	plugins: [
 		new CleanWebpackPlugin(['dist']),
 		new ProvidePlugin({ THREE: 'three' }),
+		new CopyWebpackPlugin([{ from: 'src/textures', to: 'textures' }]),
 		new HtmlWebpackPlugin({
 			title: 'Procedural Space - by Shinigami',
 			meta: {
