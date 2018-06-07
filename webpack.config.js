@@ -28,7 +28,10 @@ module.exports = {
 	plugins: [
 		new CleanWebpackPlugin(['dist']),
 		new ProvidePlugin({ THREE: 'three' }),
-		new CopyWebpackPlugin([{ from: 'src/textures', to: 'textures' }]),
+		new CopyWebpackPlugin([
+			{ from: 'src/textures', to: 'textures' },
+			{ from: 'src/favicon.ico', to: 'favicon.ico' }
+		]),
 		new HtmlWebpackPlugin({
 			title: 'Procedural Space - by Shinigami',
 			meta: {
@@ -38,7 +41,7 @@ module.exports = {
 		})
 	],
 	output: {
-		filename: '[name].bundle.js',
+		filename: '[name].bundle.[chunkhash].js',
 		path: path.resolve(__dirname, 'dist')
 	}
 };
