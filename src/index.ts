@@ -7,7 +7,6 @@ import {
 	Object3D,
 	PerspectiveCamera,
 	Scene,
-	SceneUtils,
 	Texture,
 	TextureLoader,
 	Vector3,
@@ -30,6 +29,7 @@ import { SpawnParticleOptions } from './three/examples/js/GPUParticleContainer';
 import { GPUParticleSystem } from './three/examples/js/GPUParticleSystem';
 import { EffectComposer } from './three/examples/js/postprocessing/EffectComposer';
 import { RenderPass } from './three/examples/js/postprocessing/RenderPass';
+import { SceneUtils } from './three/examples/js/utils/SceneUtils';
 
 // Project
 let screenWidth: number = window.innerWidth;
