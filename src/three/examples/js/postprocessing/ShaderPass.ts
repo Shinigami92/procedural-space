@@ -12,19 +12,16 @@ import {
 } from 'three';
 import { Pass } from './Pass';
 
-/* tslint:disable */
-
 /**
  * @author alteredq / http://alteredqualia.com/
  * @author Christopher Quadflieg / converted to typescript
  */
-
 export class ShaderPass extends Pass {
-	uniforms: { [uniform: string]: IUniform };
-	material: ShaderMaterial;
-	camera: OrthographicCamera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
-	scene: Scene = new Scene();
-	quad: Mesh = new Mesh(new PlaneBufferGeometry(2, 2), undefined);
+	public uniforms: { [uniform: string]: IUniform };
+	public material: ShaderMaterial;
+	public camera: OrthographicCamera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
+	public scene: Scene = new Scene();
+	public quad: Mesh = new Mesh(new PlaneBufferGeometry(2, 2), undefined);
 
 	constructor(shader?: ShaderMaterial | ShaderMaterialParameters, public textureID: string = 'tDiffuse') {
 		super();
@@ -40,7 +37,7 @@ export class ShaderPass extends Pass {
 				uniforms: this.uniforms,
 				vertexShader: shader.vertexShader,
 				fragmentShader: shader.fragmentShader
-			});
+			} as ShaderMaterialParameters);
 		}
 
 		this.quad.frustumCulled = false; // Avoid getting clipped
@@ -53,7 +50,7 @@ export class ShaderPass extends Pass {
 		readBuffer: WebGLRenderTarget,
 		_delta: number,
 		_maskActive?: boolean
-	) {
+	): void {
 		if (this.uniforms[this.textureID]) {
 			this.uniforms[this.textureID].value = readBuffer.texture;
 		}

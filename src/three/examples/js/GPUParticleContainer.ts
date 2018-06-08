@@ -11,8 +11,6 @@ import {
 } from 'three';
 import { GPUParticleSystem } from './GPUParticleSystem';
 
-/* tslint:disable */
-
 export interface SpawnParticleOptions {
 	position?: Vector3;
 	velocity?: Vector3;
@@ -40,15 +38,17 @@ export class GPUParticleContainer extends Object3D {
 	public time: number;
 	public offset: number;
 	public count: number;
-	public DPR: number;
+	public DPR?: number;
+	// tslint:disable-next-line:variable-name
 	public GPUParticleSystem: GPUParticleSystem;
 	public particleUpdate: boolean;
 	public particleShaderGeo: BufferGeometry;
 	public particleShaderMat: ShaderMaterial;
+	public particleSystem: Points;
+
 	private _position: Vector3;
 	private _velocity: Vector3;
 	private _color: Color;
-	public particleSystem: Points;
 
 	constructor(maxParticles: number = 100_000, particleSystem: GPUParticleSystem) {
 		super();
@@ -110,14 +110,28 @@ export class GPUParticleContainer extends Object3D {
 		this.init();
 	}
 
-	spawnParticle(options: SpawnParticleOptions = {}) {
-		var positionStartAttribute = this.particleShaderGeo.getAttribute('positionStart') as InterleavedBufferAttribute;
-		var startTimeAttribute = this.particleShaderGeo.getAttribute('startTime') as InterleavedBufferAttribute;
-		var velocityAttribute = this.particleShaderGeo.getAttribute('velocity') as InterleavedBufferAttribute;
-		var turbulenceAttribute = this.particleShaderGeo.getAttribute('turbulence') as InterleavedBufferAttribute;
-		var colorAttribute = this.particleShaderGeo.getAttribute('color') as InterleavedBufferAttribute;
-		var sizeAttribute = this.particleShaderGeo.getAttribute('size') as InterleavedBufferAttribute;
-		var lifeTimeAttribute = this.particleShaderGeo.getAttribute('lifeTime') as InterleavedBufferAttribute;
+	public spawnParticle(options: SpawnParticleOptions = {}): void {
+		const positionStartAttribute: InterleavedBufferAttribute = this.particleShaderGeo.getAttribute(
+			'positionStart'
+		) as InterleavedBufferAttribute;
+		const startTimeAttribute: InterleavedBufferAttribute = this.particleShaderGeo.getAttribute(
+			'startTime'
+		) as InterleavedBufferAttribute;
+		const velocityAttribute: InterleavedBufferAttribute = this.particleShaderGeo.getAttribute(
+			'velocity'
+		) as InterleavedBufferAttribute;
+		const turbulenceAttribute: InterleavedBufferAttribute = this.particleShaderGeo.getAttribute(
+			'turbulence'
+		) as InterleavedBufferAttribute;
+		const colorAttribute: InterleavedBufferAttribute = this.particleShaderGeo.getAttribute(
+			'color'
+		) as InterleavedBufferAttribute;
+		const sizeAttribute: InterleavedBufferAttribute = this.particleShaderGeo.getAttribute(
+			'size'
+		) as InterleavedBufferAttribute;
+		const lifeTimeAttribute: InterleavedBufferAttribute = this.particleShaderGeo.getAttribute(
+			'lifeTime'
+		) as InterleavedBufferAttribute;
 
 		// setup reasonable default values for all arguments
 
@@ -127,18 +141,20 @@ export class GPUParticleContainer extends Object3D {
 			options.velocity !== undefined ? this._velocity.copy(options.velocity) : this._velocity.set(0, 0, 0);
 		this._color = options.color !== undefined ? this._color.set(options.color) : this._color.set(0xffffff);
 
-		var positionRandomness = options.positionRandomness !== undefined ? options.positionRandomness : 0;
-		var velocityRandomness = options.velocityRandomness !== undefined ? options.velocityRandomness : 0;
-		var colorRandomness = options.colorRandomness !== undefined ? options.colorRandomness : 1;
-		var turbulence = options.turbulence !== undefined ? options.turbulence : 1;
-		var lifetime = options.lifetime !== undefined ? options.lifetime : 5;
-		var size = options.size !== undefined ? options.size : 10;
-		var sizeRandomness = options.sizeRandomness !== undefined ? options.sizeRandomness : 0;
-		var smoothPosition = options.smoothPosition !== undefined ? options.smoothPosition : false;
+		const positionRandomness: number = options.positionRandomness !== undefined ? options.positionRandomness : 0;
+		const velocityRandomness: number = options.velocityRandomness !== undefined ? options.velocityRandomness : 0;
+		const colorRandomness: number = options.colorRandomness !== undefined ? options.colorRandomness : 1;
+		const turbulence: number = options.turbulence !== undefined ? options.turbulence : 1;
+		const lifetime: number = options.lifetime !== undefined ? options.lifetime : 5;
+		let size: number = options.size !== undefined ? options.size : 10;
+		const sizeRandomness: number = options.sizeRandomness !== undefined ? options.sizeRandomness : 0;
+		const smoothPosition: boolean = options.smoothPosition !== undefined ? options.smoothPosition : false;
 
-		if (this.DPR !== undefined) size *= this.DPR;
+		if (this.DPR !== undefined) {
+			size *= this.DPR;
+		}
 
-		var i = this.PARTICLE_CURSOR;
+		const i: number = this.PARTICLE_CURSOR;
 
 		// position
 
@@ -157,11 +173,11 @@ export class GPUParticleContainer extends Object3D {
 
 		// velocity
 
-		var maxVel = 2;
+		const maxVel: number = 2;
 
-		var velX = this._velocity.x + this.GPUParticleSystem.random() * velocityRandomness;
-		var velY = this._velocity.y + this.GPUParticleSystem.random() * velocityRandomness;
-		var velZ = this._velocity.z + this.GPUParticleSystem.random() * velocityRandomness;
+		let velX: number = this._velocity.x + this.GPUParticleSystem.random() * velocityRandomness;
+		let velY: number = this._velocity.y + this.GPUParticleSystem.random() * velocityRandomness;
+		let velZ: number = this._velocity.z + this.GPUParticleSystem.random() * velocityRandomness;
 
 		velX = ThreeMath.clamp((velX - -maxVel) / (maxVel - -maxVel), 0, 1);
 		velY = ThreeMath.clamp((velY - -maxVel) / (maxVel - -maxVel), 0, 1);
@@ -206,30 +222,40 @@ export class GPUParticleContainer extends Object3D {
 		this.particleUpdate = true;
 	}
 
-	init() {
+	public init(): void {
 		this.particleSystem = new Points(this.particleShaderGeo, this.particleShaderMat);
 		this.particleSystem.frustumCulled = false;
 		this.add(this.particleSystem);
 	}
 
-	update(time: number) {
+	public update(time: number): void {
 		this.time = time;
 		this.particleShaderMat.uniforms.uTime.value = time;
 
 		this.geometryUpdate();
 	}
 
-	geometryUpdate() {
+	public geometryUpdate(): void {
 		if (this.particleUpdate === true) {
 			this.particleUpdate = false;
 
-			var positionStartAttribute = this.particleShaderGeo.getAttribute('positionStart') as BufferAttribute;
-			var startTimeAttribute = this.particleShaderGeo.getAttribute('startTime') as BufferAttribute;
-			var velocityAttribute = this.particleShaderGeo.getAttribute('velocity') as BufferAttribute;
-			var turbulenceAttribute = this.particleShaderGeo.getAttribute('turbulence') as BufferAttribute;
-			var colorAttribute = this.particleShaderGeo.getAttribute('color') as BufferAttribute;
-			var sizeAttribute = this.particleShaderGeo.getAttribute('size') as BufferAttribute;
-			var lifeTimeAttribute = this.particleShaderGeo.getAttribute('lifeTime') as BufferAttribute;
+			const positionStartAttribute: BufferAttribute = this.particleShaderGeo.getAttribute(
+				'positionStart'
+			) as BufferAttribute;
+			const startTimeAttribute: BufferAttribute = this.particleShaderGeo.getAttribute(
+				'startTime'
+			) as BufferAttribute;
+			const velocityAttribute: BufferAttribute = this.particleShaderGeo.getAttribute(
+				'velocity'
+			) as BufferAttribute;
+			const turbulenceAttribute: BufferAttribute = this.particleShaderGeo.getAttribute(
+				'turbulence'
+			) as BufferAttribute;
+			const colorAttribute: BufferAttribute = this.particleShaderGeo.getAttribute('color') as BufferAttribute;
+			const sizeAttribute: BufferAttribute = this.particleShaderGeo.getAttribute('size') as BufferAttribute;
+			const lifeTimeAttribute: BufferAttribute = this.particleShaderGeo.getAttribute(
+				'lifeTime'
+			) as BufferAttribute;
 
 			if (this.offset + this.count < this.PARTICLE_COUNT) {
 				positionStartAttribute.updateRange.offset = this.offset * positionStartAttribute.itemSize;
@@ -279,7 +305,7 @@ export class GPUParticleContainer extends Object3D {
 		}
 	}
 
-	dispose() {
+	public dispose(): void {
 		this.particleShaderGeo.dispose();
 	}
 }

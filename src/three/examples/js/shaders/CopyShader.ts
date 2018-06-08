@@ -1,12 +1,24 @@
+export interface CopyShader {
+	uniforms: {
+		tDiffuse: {
+			value: null;
+		};
+		opacity: {
+			value: number;
+		};
+	};
+	vertexShader: string;
+	fragmentShader: string;
+}
+
 /**
  * @author alteredq / http://alteredqualia.com/
  * @author Christopher Quadflieg / converted to typescript
  *
  * Full-screen textured quad shader
  */
-
-// tslint:disable-next-line:variable-name typedef
-export const CopyShader = {
+// tslint:disable-next-line:variable-name
+export const CopyShader: CopyShader = {
 	uniforms: {
 		tDiffuse: { value: null },
 		opacity: { value: 1.0 }

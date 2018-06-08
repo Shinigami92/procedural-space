@@ -1,28 +1,30 @@
-import { LinearFilter, RGBAFormat, WebGLRenderer, WebGLRenderTarget } from 'three';
+import { LinearFilter, PixelFormat, RGBAFormat, TextureFilter, WebGLRenderer, WebGLRenderTarget } from 'three';
 import { CopyShader } from '../shaders/CopyShader';
 import { ClearMaskPass, MaskPass } from './MaskPass';
 import { Pass } from './Pass';
 import { ShaderPass } from './ShaderPass';
 
-/* tslint:disable */
-
 /**
  * @author alteredq / http://alteredqualia.com/
  * @author Christopher Quadflieg / converted to typescript
  */
-
 export class EffectComposer {
-	renderTarget1: WebGLRenderTarget;
-	renderTarget2: WebGLRenderTarget;
-	writeBuffer: WebGLRenderTarget;
-	readBuffer: WebGLRenderTarget;
+	public renderTarget1: WebGLRenderTarget;
+	public renderTarget2: WebGLRenderTarget;
+	public writeBuffer: WebGLRenderTarget;
+	public readBuffer: WebGLRenderTarget;
 
-	passes: Pass[] = [];
-	copyPass: ShaderPass;
+	public passes: Pass[] = [];
+	public copyPass: ShaderPass;
 
 	constructor(public renderer: WebGLRenderer, renderTarget?: WebGLRenderTarget) {
 		if (renderTarget === undefined) {
-			const parameters = {
+			const parameters: {
+				minFilter: TextureFilter;
+				magFilter: TextureFilter;
+				format: PixelFormat;
+				stencilBuffer: boolean;
+			} = {
 				minFilter: LinearFilter,
 				magFilter: LinearFilter,
 				format: RGBAFormat,
@@ -30,7 +32,7 @@ export class EffectComposer {
 			};
 
 			// @ts-ignore
-			const size = renderer.getDrawingBufferSize();
+			const size: { width: number; height: number } = renderer.getDrawingBufferSize();
 			renderTarget = new WebGLRenderTarget(size.width, size.height, parameters);
 			renderTarget.texture.name = 'EffectComposer.rt1';
 		}
@@ -45,41 +47,43 @@ export class EffectComposer {
 		this.copyPass = new ShaderPass(CopyShader);
 	}
 
-	public swapBuffers() {
-		var tmp = this.readBuffer;
+	public swapBuffers(): void {
+		const tmp: WebGLRenderTarget = this.readBuffer;
 		this.readBuffer = this.writeBuffer;
 		this.writeBuffer = tmp;
 	}
 
-	public addPass(pass: Pass) {
+	public addPass(pass: Pass): void {
 		this.passes.push(pass);
 
 		// @ts-ignore
-		var size = this.renderer.getDrawingBufferSize();
+		const size: { width: number; height: number } = this.renderer.getDrawingBufferSize();
 		pass.setSize(size.width, size.height);
 	}
 
-	public insertPass(pass: Pass, index: number) {
+	public insertPass(pass: Pass, index: number): void {
 		this.passes.splice(index, 0, pass);
 	}
 
-	public render(delta: number) {
-		var maskActive = false;
+	public render(delta: number): void {
+		let maskActive: boolean = false;
 
-		var pass: Pass,
-			i,
-			il = this.passes.length;
+		let pass: Pass;
+		let i: number;
+		const il: number = this.passes.length;
 
 		for (i = 0; i < il; i++) {
 			pass = this.passes[i];
 
-			if (pass.enabled === false) continue;
+			if (pass.enabled === false) {
+				continue;
+			}
 
 			pass.render(this.renderer, this.writeBuffer, this.readBuffer, delta, maskActive);
 
 			if (pass.needsSwap) {
 				if (maskActive) {
-					var context = this.renderer.context;
+					const context: WebGLRenderingContext = this.renderer.context;
 
 					context.stencilFunc(context.NOTEQUAL, 1, 0xffffffff);
 
@@ -101,10 +105,10 @@ export class EffectComposer {
 		}
 	}
 
-	public reset(renderTarget?: WebGLRenderTarget) {
+	public reset(renderTarget?: WebGLRenderTarget): void {
 		if (renderTarget === undefined) {
 			// @ts-ignore
-			var size = this.renderer.getDrawingBufferSize();
+			const size: { width: number; height: number } = this.renderer.getDrawingBufferSize();
 
 			renderTarget = this.renderTarget1.clone();
 			renderTarget.setSize(size.width, size.height);
@@ -119,12 +123,12 @@ export class EffectComposer {
 		this.readBuffer = this.renderTarget2;
 	}
 
-	public setSize(width: number, height: number) {
+	public setSize(width: number, height: number): void {
 		this.renderTarget1.setSize(width, height);
 		this.renderTarget2.setSize(width, height);
 
-		for (var i = 0; i < this.passes.length; i++) {
-			this.passes[i].setSize(width, height);
+		for (const pass of this.passes) {
+			pass.setSize(width, height);
 		}
 	}
 }

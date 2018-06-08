@@ -1,8 +1,6 @@
 import { AdditiveBlending, Object3D, RepeatWrapping, ShaderMaterial, Texture, TextureLoader } from 'three';
 import { GPUParticleContainer, SpawnParticleOptions } from './GPUParticleContainer';
 
-/* tslint:disable */
-
 /**
  * GPU Particle System
  * @author flimshaw - Charlie Hoey - http://charliehoey.com
@@ -58,7 +56,11 @@ export class GPUParticleSystem extends Object3D {
 
 		// custom vertex and fragement shader
 
-		var GPUParticleShader = {
+		// tslint:disable-next-line:variable-name
+		const GPUParticleShader: {
+			vertexShader: string;
+			fragmentShader: string;
+		} = {
 			vertexShader: [
 				'uniform float uTime;',
 				'uniform float uScale;',
@@ -98,9 +100,11 @@ export class GPUParticleSystem extends Object3D {
 
 				'	newPosition = positionStart + ( v * 10.0 ) * timeElapsed;',
 
+				// tslint:disable-next-line:max-line-length
 				'	vec3 noise = texture2D( tNoise, vec2( newPosition.x * 0.015 + ( uTime * 0.05 ), newPosition.y * 0.02 + ( uTime * 0.015 ) ) ).rgb;',
 				'	vec3 noiseVel = ( noise.rgb - 0.5 ) * 30.0;',
 
+				// tslint:disable-next-line:max-line-length
 				'	newPosition = mix( newPosition, newPosition + vec3( noiseVel * ( turbulence * 5.0 ) ), ( timeElapsed / lifeTime ) );',
 
 				'	if( v.y > 0. && v.y < .05 ) {',
@@ -171,17 +175,17 @@ export class GPUParticleSystem extends Object3D {
 
 		// preload a million random numbers
 
-		var i: number;
+		let i: number;
 
 		for (i = 1e5; i > 0; i--) {
 			this.rand.push(Math.random() - 0.5);
 		}
 
-		this.random = function() {
+		this.random = function(): number {
 			return ++i >= this.rand.length ? this.rand[(i = 1)] : this.rand[i];
 		};
 
-		var textureLoader = new TextureLoader();
+		const textureLoader: TextureLoader = new TextureLoader();
 
 		this.particleNoiseTex = this.PARTICLE_NOISE_TEXTURE || textureLoader.load('textures/perlin-512.png');
 		this.particleNoiseTex.wrapS = this.particleNoiseTex.wrapT = RepeatWrapping;
@@ -190,25 +194,25 @@ export class GPUParticleSystem extends Object3D {
 		this.particleSpriteTex.wrapS = this.particleSpriteTex.wrapT = RepeatWrapping;
 
 		this.particleShaderMat = new ShaderMaterial({
-			transparent: true,
+			blending: AdditiveBlending,
 			depthWrite: false,
+			fragmentShader: GPUParticleShader.fragmentShader,
+			transparent: true,
 			uniforms: {
-				uTime: {
-					value: 0.0
-				},
-				uScale: {
-					value: 1.0
-				},
 				tNoise: {
 					value: this.particleNoiseTex
 				},
 				tSprite: {
 					value: this.particleSpriteTex
+				},
+				uScale: {
+					value: 1.0
+				},
+				uTime: {
+					value: 0.0
 				}
 			},
-			blending: AdditiveBlending,
-			vertexShader: GPUParticleShader.vertexShader,
-			fragmentShader: GPUParticleShader.fragmentShader
+			vertexShader: GPUParticleShader.vertexShader
 		});
 
 		// define defaults for all values
@@ -219,38 +223,40 @@ export class GPUParticleSystem extends Object3D {
 		this.init();
 	}
 
-	init() {
-		for (var i = 0; i < this.PARTICLE_CONTAINERS; i++) {
-			var c = new GPUParticleContainer(this.PARTICLES_PER_CONTAINER, this);
+	public init(): void {
+		for (let i: number = 0; i < this.PARTICLE_CONTAINERS; i++) {
+			const c: GPUParticleContainer = new GPUParticleContainer(this.PARTICLES_PER_CONTAINER, this);
 			this.particleContainers.push(c);
 			this.add(c);
 		}
 	}
 
-	spawnParticle(options: SpawnParticleOptions = {}) {
+	public spawnParticle(options: SpawnParticleOptions = {}): void {
 		this.PARTICLE_CURSOR++;
 
 		if (this.PARTICLE_CURSOR >= this.PARTICLE_COUNT) {
 			this.PARTICLE_CURSOR = 1;
 		}
 
-		var currentContainer = this.particleContainers[Math.floor(this.PARTICLE_CURSOR / this.PARTICLES_PER_CONTAINER)];
+		const currentContainer: GPUParticleContainer = this.particleContainers[
+			Math.floor(this.PARTICLE_CURSOR / this.PARTICLES_PER_CONTAINER)
+		];
 
 		currentContainer.spawnParticle(options);
 	}
 
-	update(time: number) {
-		for (var i = 0; i < this.PARTICLE_CONTAINERS; i++) {
+	public update(time: number): void {
+		for (let i: number = 0; i < this.PARTICLE_CONTAINERS; i++) {
 			this.particleContainers[i].update(time);
 		}
 	}
 
-	dispose() {
+	public dispose(): void {
 		this.particleShaderMat.dispose();
 		this.particleNoiseTex.dispose();
 		this.particleSpriteTex.dispose();
 
-		for (var i = 0; i < this.PARTICLE_CONTAINERS; i++) {
+		for (let i: number = 0; i < this.PARTICLE_CONTAINERS; i++) {
 			this.particleContainers[i].dispose();
 		}
 	}

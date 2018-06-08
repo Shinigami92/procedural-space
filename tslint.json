@@ -4,6 +4,7 @@
 	"rules": {
 		"array-bracket-spacing": [true, "never"],
 		"block-spacing": [true, "always"],
+		"comment-format": false,
 		"no-constant-condition": true,
 		"no-duplicate-case": true,
 		"no-multi-spaces": true,
@@ -15,7 +16,7 @@
 		},
 		"interface-name": false,
 		"strict-type-predicates": true,
-		"variable-name": true,
+		"variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"],
 		"max-classes-per-file": [true, 2],
 		"max-line-length": {
 			"options": {

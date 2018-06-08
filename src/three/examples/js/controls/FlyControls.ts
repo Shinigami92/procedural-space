@@ -1,22 +1,39 @@
 import { PerspectiveCamera, Quaternion, Vector3 } from 'three';
 
-/* tslint:disable */
+function bind(scope: FlyControls, fn: ((event: MouseEvent) => void) | ((event: KeyboardEvent) => void)): () => void {
+	return function(): void {
+		fn.apply(scope, arguments);
+	};
+}
+
+function contextmenu(event: { preventDefault: () => void }): void {
+	event.preventDefault();
+}
+
+export interface MoveState {
+	up: number;
+	down: number;
+	left: number;
+	right: number;
+	forward: number;
+	back: number;
+	pitchUp: number;
+	pitchDown: number;
+	yawLeft: number;
+	yawRight: number;
+	rollLeft: number;
+	rollRight: number;
+}
+
+export interface ContainerDimension {
+	size: [number, number];
+	offset: [number, number];
+}
 
 /**
  * @author James Baicoianu / http://www.baicoianu.com/
  * @author Christopher Quadflieg / converted to typescript
  */
-
-function bind(scope: FlyControls, fn: ((event: MouseEvent) => void) | ((event: KeyboardEvent) => void)) {
-	return function() {
-		fn.apply(scope, arguments);
-	};
-}
-
-function contextmenu(event: { preventDefault: () => void }) {
-	event.preventDefault();
-}
-
 export class FlyControls {
 	public domElement: HTMLElement | Document;
 
@@ -24,10 +41,10 @@ export class FlyControls {
 
 	public movementSpeed: number = 1.0;
 	public movementSpeedMultiplier: number;
-	public rollSpeed = 0.005;
+	public rollSpeed: number = 0.005;
 
-	public dragToLook = false;
-	public autoForward = false;
+	public dragToLook: boolean = false;
+	public autoForward: boolean = false;
 
 	// disable default target object behavior
 
@@ -37,7 +54,7 @@ export class FlyControls {
 
 	private mouseStatus: number = 0;
 
-	private moveState = {
+	private moveState: MoveState = {
 		up: 0,
 		down: 0,
 		left: 0,
@@ -69,7 +86,7 @@ export class FlyControls {
 		this.init();
 	}
 
-	public handleEvent(event: KeyboardEvent) {
+	public handleEvent(event: KeyboardEvent): void {
 		switch (event.type) {
 			case 'keydown':
 				this.keydown(event);
@@ -77,58 +94,71 @@ export class FlyControls {
 		}
 	}
 
-	public keydown(event: KeyboardEvent) {
+	public keydown(event: KeyboardEvent): void {
 		if (event.altKey) {
 			return;
 		}
 
-		//event.preventDefault();
+		// event.preventDefault();
 
 		switch (event.keyCode) {
 			case 16:
-				/* shift */ this.movementSpeedMultiplier = 0.1;
+				/* shift */
+				this.movementSpeedMultiplier = 0.1;
 				break;
 
 			case 87:
-				/*W*/ this.moveState.forward = 1;
+				/*W*/
+				this.moveState.forward = 1;
 				break;
 			case 83:
-				/*S*/ this.moveState.back = 1;
+				/*S*/
+				this.moveState.back = 1;
 				break;
 
 			case 65:
-				/*A*/ this.moveState.left = 1;
+				/*A*/
+				this.moveState.left = 1;
 				break;
 			case 68:
-				/*D*/ this.moveState.right = 1;
+				/*D*/
+				this.moveState.right = 1;
 				break;
 
 			case 82:
-				/*R*/ this.moveState.up = 1;
+				/*R*/
+				this.moveState.up = 1;
 				break;
 			case 70:
-				/*F*/ this.moveState.down = 1;
+				/*F*/
+				this.moveState.down = 1;
 				break;
 
 			case 38:
-				/*up*/ this.moveState.pitchUp = 1;
+				/*up*/
+				this.moveState.pitchUp = 1;
 				break;
 			case 40:
-				/*down*/ this.moveState.pitchDown = 1;
+				/*down*/
+				this.moveState.pitchDown = 1;
 				break;
 
 			case 37:
-				/*left*/ this.moveState.yawLeft = 1;
+				/*left*/
+				this.moveState.yawLeft = 1;
 				break;
 			case 39:
-				/*right*/ this.moveState.yawRight = 1;
+				/*right*/
+				this.moveState.yawRight = 1;
 				break;
 
 			case 81:
-				/*Q*/ this.moveState.rollLeft = 1;
+				/*Q*/
+				this.moveState.rollLeft = 1;
 				break;
 			case 69:
-				/*E*/ this.moveState.rollRight = 1;
+				/*E*/
+				this.moveState.rollRight = 1;
 				break;
 		}
 
@@ -136,52 +166,65 @@ export class FlyControls {
 		this.updateRotationVector();
 	}
 
-	public keyup(event: KeyboardEvent) {
+	public keyup(event: KeyboardEvent): void {
 		switch (event.keyCode) {
 			case 16:
-				/* shift */ this.movementSpeedMultiplier = 1;
+				/* shift */
+				this.movementSpeedMultiplier = 1;
 				break;
 
 			case 87:
-				/*W*/ this.moveState.forward = 0;
+				/*W*/
+				this.moveState.forward = 0;
 				break;
 			case 83:
-				/*S*/ this.moveState.back = 0;
+				/*S*/
+				this.moveState.back = 0;
 				break;
 
 			case 65:
-				/*A*/ this.moveState.left = 0;
+				/*A*/
+				this.moveState.left = 0;
 				break;
 			case 68:
-				/*D*/ this.moveState.right = 0;
+				/*D*/
+				this.moveState.right = 0;
 				break;
 
 			case 82:
-				/*R*/ this.moveState.up = 0;
+				/*R*/
+				this.moveState.up = 0;
 				break;
 			case 70:
-				/*F*/ this.moveState.down = 0;
+				/*F*/
+				this.moveState.down = 0;
 				break;
 
 			case 38:
-				/*up*/ this.moveState.pitchUp = 0;
+				/*up*/
+				this.moveState.pitchUp = 0;
 				break;
 			case 40:
-				/*down*/ this.moveState.pitchDown = 0;
+				/*down*/
+				this.moveState.pitchDown = 0;
 				break;
 
 			case 37:
-				/*left*/ this.moveState.yawLeft = 0;
+				/*left*/
+				this.moveState.yawLeft = 0;
 				break;
 			case 39:
-				/*right*/ this.moveState.yawRight = 0;
+				/*right*/
+				this.moveState.yawRight = 0;
 				break;
 
 			case 81:
-				/*Q*/ this.moveState.rollLeft = 0;
+				/*Q*/
+				this.moveState.rollLeft = 0;
 				break;
 			case 69:
-				/*E*/ this.moveState.rollRight = 0;
+				/*E*/
+				this.moveState.rollRight = 0;
 				break;
 		}
 
@@ -189,7 +232,7 @@ export class FlyControls {
 		this.updateRotationVector();
 	}
 
-	public mousedown(event: MouseEvent) {
+	public mousedown(event: MouseEvent): void {
 		if (this.domElement !== document) {
 			(this.domElement as HTMLElement).focus();
 		}
@@ -213,11 +256,11 @@ export class FlyControls {
 		}
 	}
 
-	public mousemove(event: MouseEvent) {
+	public mousemove(event: MouseEvent): void {
 		if (!this.dragToLook || this.mouseStatus > 0) {
-			var container = this.getContainerDimensions();
-			var halfWidth = container.size[0] / 2;
-			var halfHeight = container.size[1] / 2;
+			const container: ContainerDimension = this.getContainerDimensions();
+			const halfWidth: number = container.size[0] / 2;
+			const halfHeight: number = container.size[1] / 2;
 
 			this.moveState.yawLeft = -(event.pageX - container.offset[0] - halfWidth) / halfWidth;
 			this.moveState.pitchDown = (event.pageY - container.offset[1] - halfHeight) / halfHeight;
@@ -226,7 +269,7 @@ export class FlyControls {
 		}
 	}
 
-	public mouseup(event: MouseEvent) {
+	public mouseup(event: MouseEvent): void {
 		event.preventDefault();
 		event.stopPropagation();
 
@@ -250,9 +293,9 @@ export class FlyControls {
 		this.updateRotationVector();
 	}
 
-	public update(delta: number) {
-		var moveMult = delta * this.movementSpeed;
-		var rotMult = delta * this.rollSpeed;
+	public update(delta: number): void {
+		const moveMult: number = delta * this.movementSpeed;
+		const rotMult: number = delta * this.rollSpeed;
 
 		this.object.translateX(this.moveVector.x * moveMult);
 		this.object.translateY(this.moveVector.y * moveMult);
@@ -267,27 +310,27 @@ export class FlyControls {
 		this.object.rotation.setFromQuaternion(this.object.quaternion, this.object.rotation.order);
 	}
 
-	public updateMovementVector() {
-		var forward = this.moveState.forward || (this.autoForward && !this.moveState.back) ? 1 : 0;
+	public updateMovementVector(): void {
+		const forward: 0 | 1 = this.moveState.forward || (this.autoForward && !this.moveState.back) ? 1 : 0;
 
 		this.moveVector.x = -this.moveState.left + this.moveState.right;
 		this.moveVector.y = -this.moveState.down + this.moveState.up;
 		this.moveVector.z = -forward + this.moveState.back;
 
-		//console.log( 'move:', [ this.moveVector.x, this.moveVector.y, this.moveVector.z ] );
+		// console.log( 'move:', [ this.moveVector.x, this.moveVector.y, this.moveVector.z ] );
 	}
 
-	public updateRotationVector() {
+	public updateRotationVector(): void {
 		this.rotationVector.x = -this.moveState.pitchDown + this.moveState.pitchUp;
 		this.rotationVector.y = -this.moveState.yawRight + this.moveState.yawLeft;
 		this.rotationVector.z = -this.moveState.rollRight + this.moveState.rollLeft;
 
-		//console.log( 'rotate:', [ this.rotationVector.x, this.rotationVector.y, this.rotationVector.z ] );
+		// console.log( 'rotate:', [ this.rotationVector.x, this.rotationVector.y, this.rotationVector.z ] );
 	}
 
-	public getContainerDimensions() {
-		if (this.domElement != document) {
-			const domElement = this.domElement as HTMLElement;
+	public getContainerDimensions(): ContainerDimension {
+		if (this.domElement !== document) {
+			const domElement: HTMLElement = this.domElement as HTMLElement;
 			return {
 				size: [domElement.offsetWidth, domElement.offsetHeight],
 				offset: [domElement.offsetLeft, domElement.offsetTop]
@@ -297,7 +340,7 @@ export class FlyControls {
 		}
 	}
 
-	public dispose() {
+	public dispose(): void {
 		this.domElement.removeEventListener('contextmenu', contextmenu, false);
 		this.domElement.removeEventListener('mousedown', this._mousedown, false);
 		this.domElement.removeEventListener('mousemove', this._mousemove, false);

@@ -1,26 +1,23 @@
-import { Camera, Scene, WebGLRenderer, WebGLRenderTarget } from 'three';
+import { Camera, Scene, WebGLRenderer, WebGLRenderTarget, WebGLState } from 'three';
 import { Pass } from './Pass';
-
-/* tslint:disable */
 
 /**
  * @author alteredq / http://alteredqualia.com/
  * @author Christopher Quadflieg / converted to typescript
  */
-
 export class MaskPass extends Pass {
-	public clear = true;
-	public needsSwap = false;
+	public clear: boolean = true;
+	public needsSwap: boolean = false;
 
-	public inverse = false;
+	public inverse: boolean = false;
 
 	constructor(public scene: Scene, public camera: Camera) {
 		super();
 	}
 
-	render(renderer: WebGLRenderer, writeBuffer: WebGLRenderTarget, readBuffer: WebGLRenderTarget) {
-		var context = renderer.context;
-		var state = renderer.state;
+	public render(renderer: WebGLRenderer, writeBuffer: WebGLRenderTarget, readBuffer: WebGLRenderTarget): void {
+		const context: WebGLRenderingContext = renderer.context;
+		const state: WebGLState = renderer.state;
 
 		// don't update color or depth
 
@@ -34,7 +31,8 @@ export class MaskPass extends Pass {
 
 		// set up stencil
 
-		var writeValue, clearValue;
+		let writeValue: 0 | 1;
+		let clearValue: 0 | 1;
 
 		if (this.inverse) {
 			writeValue = 0;
@@ -67,9 +65,9 @@ export class MaskPass extends Pass {
 }
 
 export class ClearMaskPass extends Pass {
-	public needsSwap = false;
+	public needsSwap: boolean = false;
 
-	public render(renderer: WebGLRenderer) {
+	public render(renderer: WebGLRenderer): void {
 		renderer.state.buffers.stencil.setTest(false);
 	}
 }
