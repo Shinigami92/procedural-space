@@ -25,9 +25,11 @@ export interface MoveState {
 	rollRight: number;
 }
 
+export type FixedSizeArray<N extends number, T> = { 0: any; length: N } & ReadonlyArray<T>;
+
 export interface ContainerDimension {
-	size: [number, number];
-	offset: [number, number];
+	size: FixedSizeArray<2, number>;
+	offset: FixedSizeArray<2, number>;
 }
 
 /**
